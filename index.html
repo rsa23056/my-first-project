@@ -93,8 +93,8 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
-    align-items: flex-start;
-    padding: 60px 80px;
+    align-items: center;
+    padding: 60px 40px;
     gap: 16px;
   }
 
@@ -102,6 +102,13 @@
     display: flex;
     align-items: flex-start;
     gap: 24px;
+  }
+
+  .study-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
   }
 
   /* Speaker button */
@@ -398,8 +405,60 @@
     letter-spacing: 0.05em;
   }
 
+  /* ===== COUNT SCREEN ===== */
+  #countScreen {
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    gap: 32px;
+  }
+  #countScreen h2 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #333;
+  }
+  #countScreen .set-name {
+    font-size: 15px;
+    color: #888;
+    margin-top: -20px;
+  }
+  .count-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    justify-content: center;
+  }
+  .count-card {
+    background: #fff;
+    border: 2px solid #e0e0e0;
+    border-radius: 16px;
+    padding: 24px 40px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+    min-width: 130px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  .count-card:hover {
+    border-color: #5bc4d4;
+    box-shadow: 0 4px 16px rgba(91,196,212,0.2);
+    transform: translateY(-2px);
+  }
+  .count-card .count-num { font-size: 32px; font-weight: 700; color: #333; }
+  .count-card .count-label { font-size: 13px; color: #aaa; margin-top: 4px; }
+  .back-btn {
+    background: none;
+    border: none;
+    color: #aaa;
+    font-size: 14px;
+    cursor: pointer;
+    padding: 8px 16px;
+    text-decoration: underline;
+  }
+  .back-btn:hover { color: #555; }
+
   @media (max-width: 600px) {
-    .study-content { padding: 30px 24px; }
+    .study-content { padding: 30px 16px; }
     .progress-bar-wrap { padding: 0 24px 16px; }
     .english-hint { font-size: 24px; }
     .typing-display { font-size: 30px; }
@@ -419,28 +478,38 @@
   <div class="card-grid" id="cardGrid"></div>
 </div>
 
+<!-- ===== COUNT SCREEN ===== -->
+<div id="countScreen" class="screen">
+  <h2>問題数を選んでください</h2>
+  <div class="set-name" id="countSetName"></div>
+  <div class="count-grid" id="countGrid"></div>
+  <button class="back-btn" onclick="goTop()">← 単語集を選び直す</button>
+</div>
+
 <!-- ===== STUDY SCREEN ===== -->
 <div id="studyScreen" class="screen">
   <div class="study-content" id="studyContent">
-    <div class="step-badge">
-      <div class="dot"></div>
-      <span id="stepLabel">Step 1：練習モード</span>
-    </div>
-
-    <div class="word-display">
-      <button class="speaker-btn" id="speakerBtn" onclick="speakWord()" title="もう一度聴く">
-        <svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
-      </button>
-      <div class="word-info">
-        <div class="japanese-text" id="japaneseText"></div>
-        <div class="english-hint" id="englishHint"></div>
-        <div class="hint-reveal" id="hintReveal"></div>
+    <div class="study-inner">
+      <div class="step-badge">
+        <div class="dot"></div>
+        <span id="stepLabel">Step 1：練習モード</span>
       </div>
-    </div>
 
-    <div class="typing-display" id="typingDisplay"></div>
-    <div class="feedback-msg" id="feedbackMsg"></div>
-    <button class="action-btn" id="actionBtn" onclick="handleAction()"></button>
+      <div class="word-display">
+        <button class="speaker-btn" id="speakerBtn" onclick="speakWord()" title="もう一度聴く">
+          <svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
+        </button>
+        <div class="word-info">
+          <div class="japanese-text" id="japaneseText"></div>
+          <div class="english-hint" id="englishHint"></div>
+          <div class="hint-reveal" id="hintReveal"></div>
+        </div>
+      </div>
+
+      <div class="typing-display" id="typingDisplay"></div>
+      <div class="feedback-msg" id="feedbackMsg"></div>
+      <button class="action-btn" id="actionBtn" onclick="handleAction()"></button>
+    </div>
   </div>
 
   <div class="progress-bar-wrap">
@@ -708,6 +777,15 @@ function speakWord() {
   window.speechSynthesis.speak(utter);
 }
 
+// ===== SHUFFLE =====
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
 // ===== TOP SCREEN =====
 function buildTopScreen() {
   const grid = document.getElementById('cardGrid');
@@ -728,7 +806,32 @@ function buildTopScreen() {
 function selectWordSet(id) {
   currentSetId = id;
   const set = wordSets.find(s => s.id === id);
-  currentWords = [...set.words];
+  document.getElementById('countSetName').textContent = set.title + '（' + set.words.length + '単語）';
+
+  const options = [10, 20, 30, set.words.length];
+  const labels = ['10問', '20問', '30問', '全問'];
+  const grid = document.getElementById('countGrid');
+  grid.innerHTML = '';
+  options.forEach((n, i) => {
+    const actual = Math.min(n, set.words.length);
+    const card = document.createElement('div');
+    card.className = 'count-card';
+    card.innerHTML = `
+      <div class="count-num">${labels[i]}</div>
+      <div class="count-label">${actual}問出題</div>
+    `;
+    card.onclick = () => selectCount(actual);
+    grid.appendChild(card);
+  });
+
+  showScreen('countScreen');
+  document.getElementById('titleBar').textContent = '英単語タイピング・問題数を選択';
+}
+
+function selectCount(n) {
+  const set = wordSets.find(s => s.id === currentSetId);
+  const shuffled = shuffle([...set.words]);
+  currentWords = shuffled.slice(0, n);
   currentIndex = 0;
   currentStep = 1;
   wrongWords = [];
@@ -917,12 +1020,14 @@ function stepComplete() {
 
 function closeOverlay() {
   document.getElementById('step1CompleteOverlay').classList.remove('active');
+  shuffle(currentWords);
   currentIndex = 0;
   loadWord();
 }
 
 function startStep2() {
   document.getElementById('step1CompleteOverlay').classList.remove('active');
+  shuffle(currentWords);
   currentStep = 2;
   currentIndex = 0;
   wrongWords = [];
