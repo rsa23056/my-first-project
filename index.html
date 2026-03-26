@@ -131,9 +131,9 @@
   .word-info { display: flex; flex-direction: column; gap: 8px; }
 
   .japanese-text {
-    font-size: 22px;
-    color: #888;
-    font-weight: 500;
+    font-size: 26px;
+    color: #333;
+    font-weight: 700;
     letter-spacing: 0.05em;
   }
 
@@ -286,6 +286,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 10px;
     background: #fff5f5;
     border: 1px solid #ffcdd2;
     border-radius: 10px;
@@ -469,6 +470,94 @@
   }
   .back-btn:hover { color: #555; }
 
+  /* ===== SPEAK BUTTON (small, reusable) ===== */
+  .speak-sm-btn {
+    background: #5bc4d4;
+    border: none;
+    border-radius: 8px;
+    width: 34px;
+    height: 34px;
+    cursor: pointer;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+  }
+  .speak-sm-btn:hover { background: #40b0c2; }
+  .speak-sm-btn svg { width: 16px; height: 16px; fill: #fff; }
+
+  /* ===== WORD LIST SCREEN ===== */
+  #wordListScreen {
+    align-items: center;
+    padding: 28px 20px 40px;
+    gap: 18px;
+    overflow-y: auto;
+  }
+  #wordListScreen h2 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #333;
+  }
+  .word-list-table {
+    width: 100%;
+    max-width: 600px;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .word-list-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 16px;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 16px;
+  }
+  .word-list-row:last-child { border-bottom: none; }
+  .word-list-row .wl-jp { flex: 1; color: #555; }
+  .word-list-row .wl-en { flex: 1; font-weight: 700; color: #333; }
+  .wl-del-btn {
+    background: none;
+    border: 1px solid #ffcdd2;
+    border-radius: 8px;
+    color: #f44336;
+    font-size: 13px;
+    padding: 4px 10px;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .wl-del-btn:hover { background: #fff5f5; }
+  .word-add-form {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    width: 100%;
+    max-width: 600px;
+  }
+  .word-add-form input {
+    flex: 1;
+    min-width: 120px;
+    padding: 10px 14px;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    font-size: 16px;
+    outline: none;
+    font-family: inherit;
+  }
+  .word-add-form input:focus { border-color: #5bc4d4; }
+  .word-add-form button {
+    background: #5bc4d4;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 22px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .word-add-form button:hover { background: #40b0c2; }
+
   @media (max-width: 600px) {
     .study-content { padding: 30px 16px; }
     .progress-bar-wrap { padding: 0 24px 16px; }
@@ -495,7 +584,20 @@
   <h2>問題数を選んでください</h2>
   <div class="set-name" id="countSetName"></div>
   <div class="count-grid" id="countGrid"></div>
+  <button class="outline-btn" onclick="openWordList()" style="font-size:14px;padding:10px 24px">出題単語一覧</button>
   <button class="back-btn" onclick="goTop()">← 単語集を選び直す</button>
+</div>
+
+<!-- ===== WORD LIST SCREEN ===== -->
+<div id="wordListScreen" class="screen">
+  <h2 id="wordListTitle">単語一覧</h2>
+  <div class="word-list-table" id="wordListTable"></div>
+  <div class="word-add-form">
+    <input type="text" id="addJpInput" placeholder="日本語（例：犬）" />
+    <input type="text" id="addEnInput" placeholder="英語（例：dog）" />
+    <button onclick="addWord()">追加</button>
+  </div>
+  <button class="back-btn" onclick="closeWordList()">← 問題数選択に戻る</button>
 </div>
 
 <!-- ===== STUDY SCREEN ===== -->
@@ -784,12 +886,34 @@ function playSuccess() {
 // ===== SPEECH =====
 function speakWord() {
   if (!currentWords.length) return;
-  const word = currentWords[currentIndex].english;
-  const utter = new SpeechSynthesisUtterance(word);
+  speakWordText(currentWords[currentIndex].english);
+}
+
+function speakWordText(text) {
+  const utter = new SpeechSynthesisUtterance(text);
   utter.lang = 'en-US';
   utter.rate = 0.85;
   window.speechSynthesis.cancel();
   window.speechSynthesis.speak(utter);
+}
+
+// ===== KEY CLICK SOUND =====
+function playKeyClick() {
+  try {
+    const ctx = getAudioCtx();
+    const buf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * 0.04), ctx.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < data.length; i++) {
+      data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / data.length, 10);
+    }
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0.25, ctx.currentTime);
+    src.connect(gain);
+    gain.connect(ctx.destination);
+    src.start();
+  } catch(e) {}
 }
 
 // ===== SHUFFLE =====
@@ -799,6 +923,59 @@ function shuffle(arr) {
     [arr[i], arr[j]] = [arr[j], arr[i]];
   }
   return arr;
+}
+
+// ===== WORD LIST SCREEN =====
+function openWordList() {
+  const set = wordSets.find(s => s.id === currentSetId);
+  document.getElementById('wordListTitle').textContent = set.title + '・単語一覧';
+  document.getElementById('titleBar').textContent = '英単語タイピング・単語一覧';
+  renderWordList();
+  showScreen('wordListScreen');
+}
+
+function renderWordList() {
+  const set = wordSets.find(s => s.id === currentSetId);
+  const table = document.getElementById('wordListTable');
+  if (set.words.length === 0) {
+    table.innerHTML = '<p style="color:#aaa;text-align:center;padding:24px">単語がありません</p>';
+    return;
+  }
+  const speakerSvg = '<svg viewBox="0 0 24 24" width="16" height="16" fill="white"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>';
+  table.innerHTML = set.words.map((w, i) =>
+    '<div class="word-list-row">' +
+    '<span class="wl-jp">' + w.japanese + '</span>' +
+    '<span class="wl-en">' + w.english + '</span>' +
+    '<button class="speak-sm-btn" onclick="speakWordText(\'' + w.english + '\')" title="発音">' + speakerSvg + '</button>' +
+    '<button class="wl-del-btn" onclick="deleteWord(' + i + ')">削除</button>' +
+    '</div>'
+  ).join('');
+}
+
+function addWord() {
+  const jp = document.getElementById('addJpInput').value.trim();
+  const en = document.getElementById('addEnInput').value.trim().toLowerCase();
+  if (!jp || !en) return;
+  const set = wordSets.find(s => s.id === currentSetId);
+  set.words.push({ japanese: jp, english: en });
+  set.sub = set.words.length + '単語';
+  document.getElementById('addJpInput').value = '';
+  document.getElementById('addEnInput').value = '';
+  renderWordList();
+}
+
+function deleteWord(index) {
+  const set = wordSets.find(s => s.id === currentSetId);
+  set.words.splice(index, 1);
+  set.sub = set.words.length + '単語';
+  renderWordList();
+}
+
+function closeWordList() {
+  const set = wordSets.find(s => s.id === currentSetId);
+  document.getElementById('countSetName').textContent = set.title + '（' + set.words.length + '単語）';
+  document.getElementById('titleBar').textContent = '英単語タイピング・問題数を選択';
+  showScreen('countScreen');
 }
 
 // ===== TOP SCREEN =====
@@ -963,6 +1140,7 @@ function handleKey(e) {
 
   if (key === expected) {
     // Correct!
+    playKeyClick();
     typedChars++;
     document.getElementById('feedbackMsg').textContent = '';
     document.getElementById('feedbackMsg').className = 'feedback-msg';
@@ -1037,12 +1215,15 @@ function stepComplete() {
     document.getElementById('step1ReviewBtn').style.display = step1WrongWords.length > 0 ? '' : 'none';
     const list = document.getElementById('step1ReviewList');
     if (step1WrongWords.length > 0) {
+      const spkSvg = '<svg viewBox="0 0 24 24" width="14" height="14" fill="white"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>';
       list.innerHTML = '<div style="width:100%;max-width:480px;text-align:left">' +
         '<p style="font-size:14px;color:#f44336;font-weight:700;margin-bottom:8px">間違えた単語（' + step1WrongWords.length + '語）</p>' +
         step1WrongWords.map(w =>
-          '<div style="display:flex;justify-content:space-between;background:#fff5f5;border:1px solid #ffcdd2;border-radius:10px;padding:10px 16px;margin-bottom:6px;font-size:15px">' +
-          '<span style="color:#888">' + w.japanese + '</span>' +
-          '<span style="font-weight:700;color:#f44336">' + w.english + '</span></div>'
+          '<div style="display:flex;align-items:center;gap:10px;background:#fff5f5;border:1px solid #ffcdd2;border-radius:10px;padding:10px 16px;margin-bottom:6px;font-size:15px">' +
+          '<span style="flex:1;color:#888">' + w.japanese + '</span>' +
+          '<span style="flex:1;font-weight:700;color:#f44336">' + w.english + '</span>' +
+          '<button class="speak-sm-btn" onclick="speakWordText(\'' + w.english + '\')" title="発音">' + spkSvg + '</button>' +
+          '</div>'
         ).join('') + '</div>';
     } else {
       list.innerHTML = '<p style="color:#4caf50;font-size:16px;font-weight:700">🎉 全問ノーミス！</p>';
@@ -1119,6 +1300,9 @@ function showResult() {
         <div class="review-word">
           <span class="rw-jp">${w.japanese}</span>
           <span class="rw-en">${w.english}</span>
+          <button class="speak-sm-btn" onclick="speakWordText('${w.english}')" title="発音">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="white"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
+          </button>
         </div>
       `).join('');
   } else {
