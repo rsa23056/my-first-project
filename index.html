@@ -558,6 +558,89 @@
   }
   .word-add-form button:hover { background: #40b0c2; }
 
+  /* ===== CREATE SET SCREEN ===== */
+  #createSetScreen {
+    align-items: center;
+    padding: 28px 20px 60px;
+    gap: 20px;
+    overflow-y: auto;
+  }
+  #createSetScreen h2 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #333;
+  }
+  .create-set-form {
+    width: 100%;
+    max-width: 560px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-label { font-size: 13px; font-weight: 700; color: #666; letter-spacing: 0.04em; }
+  .form-input {
+    padding: 12px 16px;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    font-size: 18px;
+    outline: none;
+    font-family: inherit;
+    width: 100%;
+  }
+  .form-input:focus { border-color: #5bc4d4; }
+  .emoji-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .emoji-btn {
+    font-size: 22px;
+    background: #f5f5f5;
+    border: 2px solid transparent;
+    border-radius: 10px;
+    width: 44px;
+    height: 44px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .emoji-btn:hover { background: #e0f7fa; }
+  .emoji-btn.selected { border-color: #5bc4d4; background: #e0f7fa; }
+  .new-word-table {
+    width: 100%;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    overflow: hidden;
+    min-height: 56px;
+  }
+  .save-set-btn {
+    background: #5bc4d4;
+    color: #fff;
+    border: none;
+    border-radius: 14px;
+    padding: 16px;
+    font-size: 18px;
+    font-weight: 700;
+    cursor: pointer;
+    width: 100%;
+    transition: background 0.2s;
+  }
+  .save-set-btn:hover { background: #40b0c2; }
+  .add-set-btn {
+    background: #fff;
+    border: 2px dashed #5bc4d4;
+    border-radius: 16px;
+    padding: 22px 32px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+    min-width: 180px;
+    color: #5bc4d4;
+    font-size: 16px;
+    font-weight: 700;
+  }
+  .add-set-btn:hover { background: #e0f7fa; }
+
   @media (max-width: 600px) {
     .study-content { padding: 30px 16px; }
     .progress-bar-wrap { padding: 0 24px 16px; }
@@ -577,6 +660,33 @@
   <h1>英単語タイピング</h1>
   <p>単語集を選んでスタートしましょう！</p>
   <div class="card-grid" id="cardGrid"></div>
+  <button class="add-set-btn" onclick="openCreateSet()">＋ 単語集を追加</button>
+</div>
+
+<!-- ===== CREATE SET SCREEN ===== -->
+<div id="createSetScreen" class="screen">
+  <h2>単語集を作成</h2>
+  <div class="create-set-form">
+    <div class="form-group">
+      <div class="form-label">タイトル</div>
+      <input class="form-input" type="text" id="newSetTitle" placeholder="例：英検4級" />
+    </div>
+    <div class="form-group">
+      <div class="form-label">アイコン</div>
+      <div class="emoji-grid" id="emojiGrid"></div>
+    </div>
+    <div class="form-group">
+      <div class="form-label">単語を追加</div>
+      <div class="word-add-form">
+        <input type="text" id="newJpInput" placeholder="日本語（例：犬）" onkeydown="if(event.key==='Enter')document.getElementById('newEnInput').focus()" />
+        <input type="text" id="newEnInput" placeholder="英語（例：dog）" onkeydown="if(event.key==='Enter')addNewWord()" />
+        <button onclick="addNewWord()">追加</button>
+      </div>
+    </div>
+    <div class="new-word-table" id="newWordTable"></div>
+    <button class="save-set-btn" onclick="saveNewSet()">保存する</button>
+  </div>
+  <button class="back-btn" onclick="cancelCreateSet()">← キャンセル</button>
 </div>
 
 <!-- ===== COUNT SCREEN ===== -->
@@ -897,22 +1007,40 @@ function speakWordText(text) {
   window.speechSynthesis.speak(utter);
 }
 
-// ===== KEY CLICK SOUND =====
+// ===== KEY CLICK SOUND (mechanical) =====
 function playKeyClick() {
   try {
     const ctx = getAudioCtx();
-    const buf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * 0.04), ctx.sampleRate);
-    const data = buf.getChannelData(0);
-    for (let i = 0; i < data.length; i++) {
-      data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / data.length, 10);
+    const t = ctx.currentTime;
+
+    // ① ノイズバースト（打鍵の瞬間的な衝撃音）
+    const noiseLen = Math.floor(ctx.sampleRate * 0.012);
+    const noiseBuf = ctx.createBuffer(1, noiseLen, ctx.sampleRate);
+    const nd = noiseBuf.getChannelData(0);
+    for (let i = 0; i < noiseLen; i++) {
+      nd[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / noiseLen, 3);
     }
-    const src = ctx.createBufferSource();
-    src.buffer = buf;
-    const gain = ctx.createGain();
-    gain.gain.setValueAtTime(0.25, ctx.currentTime);
-    src.connect(gain);
-    gain.connect(ctx.destination);
-    src.start();
+    const noiseSrc = ctx.createBufferSource();
+    noiseSrc.buffer = noiseBuf;
+    const noiseGain = ctx.createGain();
+    noiseGain.gain.setValueAtTime(0.35, t);
+    noiseGain.gain.exponentialRampToValueAtTime(0.001, t + 0.012);
+    noiseSrc.connect(noiseGain);
+    noiseGain.connect(ctx.destination);
+    noiseSrc.start(t);
+
+    // ② 高周波オシレーター（「カチッ」のトーン成分）
+    const osc = ctx.createOscillator();
+    osc.type = 'square';
+    osc.frequency.setValueAtTime(1800, t);
+    osc.frequency.exponentialRampToValueAtTime(600, t + 0.018);
+    const oscGain = ctx.createGain();
+    oscGain.gain.setValueAtTime(0.07, t);
+    oscGain.gain.exponentialRampToValueAtTime(0.001, t + 0.022);
+    osc.connect(oscGain);
+    oscGain.connect(ctx.destination);
+    osc.start(t);
+    osc.stop(t + 0.025);
   } catch(e) {}
 }
 
@@ -923,6 +1051,89 @@ function shuffle(arr) {
     [arr[i], arr[j]] = [arr[j], arr[i]];
   }
   return arr;
+}
+
+// ===== CREATE SET SCREEN =====
+const EMOJI_LIST = ['📚','⭐','🌟','🎯','🏆','🎓','🌈','🦊','🐧','🌸','🎮','🚀','🎵','🌍','🍎','🔥','💡','🎨','🏅','🦁','🐬','🦋','🍀','🎪','🧩'];
+let newSetSelectedEmoji = '📚';
+let newSetWords = [];
+
+function openCreateSet() {
+  newSetSelectedEmoji = '📚';
+  newSetWords = [];
+  document.getElementById('newSetTitle').value = '';
+  document.getElementById('newJpInput').value = '';
+  document.getElementById('newEnInput').value = '';
+  renderEmojiGrid();
+  renderNewWordTable();
+  document.getElementById('titleBar').textContent = '英単語タイピング・単語集を作成';
+  showScreen('createSetScreen');
+}
+
+function renderEmojiGrid() {
+  document.getElementById('emojiGrid').innerHTML = EMOJI_LIST.map(e =>
+    '<button class="emoji-btn' + (e === newSetSelectedEmoji ? ' selected' : '') +
+    '" onclick="selectEmoji(\'' + e + '\')">' + e + '</button>'
+  ).join('');
+}
+
+function selectEmoji(emoji) {
+  newSetSelectedEmoji = emoji;
+  renderEmojiGrid();
+}
+
+function addNewWord() {
+  const jp = document.getElementById('newJpInput').value.trim();
+  const en = document.getElementById('newEnInput').value.trim().toLowerCase();
+  if (!jp || !en) return;
+  newSetWords.push({ japanese: jp, english: en });
+  document.getElementById('newJpInput').value = '';
+  document.getElementById('newEnInput').value = '';
+  renderNewWordTable();
+  document.getElementById('newJpInput').focus();
+}
+
+function deleteNewWord(index) {
+  newSetWords.splice(index, 1);
+  renderNewWordTable();
+}
+
+function renderNewWordTable() {
+  const table = document.getElementById('newWordTable');
+  if (newSetWords.length === 0) {
+    table.innerHTML = '<p style="color:#aaa;text-align:center;padding:20px;font-size:14px">単語を追加してください</p>';
+    return;
+  }
+  const spkSvg = '<svg viewBox="0 0 24 24" width="14" height="14" fill="white"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>';
+  table.innerHTML = newSetWords.map((w, i) =>
+    '<div class="word-list-row">' +
+    '<span class="wl-jp">' + w.japanese + '</span>' +
+    '<span class="wl-en">' + w.english + '</span>' +
+    '<button class="speak-sm-btn" onclick="speakWordText(\'' + w.english + '\')">' + spkSvg + '</button>' +
+    '<button class="wl-del-btn" onclick="deleteNewWord(' + i + ')">削除</button>' +
+    '</div>'
+  ).join('');
+}
+
+function saveNewSet() {
+  const title = document.getElementById('newSetTitle').value.trim();
+  if (!title) { alert('タイトルを入力してください'); return; }
+  if (newSetWords.length === 0) { alert('単語を1つ以上追加してください'); return; }
+  wordSets.push({
+    id: 'custom_' + Date.now(),
+    title,
+    icon: newSetSelectedEmoji,
+    sub: newSetWords.length + '単語',
+    words: [...newSetWords]
+  });
+  document.getElementById('titleBar').textContent = '英単語タイピング';
+  buildTopScreen();
+  showScreen('topScreen');
+}
+
+function cancelCreateSet() {
+  document.getElementById('titleBar').textContent = '英単語タイピング';
+  showScreen('topScreen');
 }
 
 // ===== WORD LIST SCREEN =====
