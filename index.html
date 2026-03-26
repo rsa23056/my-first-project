@@ -390,6 +390,13 @@
   .overlay p { font-size: 16px; color: #888; }
   .overlay .big-emoji { font-size: 72px; }
 
+  #step1ReviewList {
+    max-height: 28vh;
+    overflow-y: auto;
+    width: 100%;
+    max-width: 480px;
+  }
+
   /* Shake animation for wrong */
   @keyframes shake {
     0%, 100% { transform: translateX(0); }
@@ -537,11 +544,11 @@
 <div class="overlay" id="step1CompleteOverlay">
   <div class="big-emoji">🎉</div>
   <h2>Step 1 完了！</h2>
-  <p>すべての単語を練習しました。<br>チャレンジモードに挑戦しよう！</p>
+  <div id="step1ReviewList"></div>
   <button class="action-btn visible" style="margin-top:0" onclick="startStep2()">Step 2 へ進む →</button>
   <button class="outline-btn" onclick="closeOverlay()">もう一度 Step 1 を練習する</button>
   <button class="outline-btn" id="step1ReviewBtn" onclick="reviewWrongFromStep1()" style="display:none">間違えた単語を復習する</button>
-  <button class="outline-btn" onclick="goTop()">メニューへ戻る</button>
+  <button class="outline-btn" onclick="goTop()">単語集を選ぶ</button>
 </div>
 
 <!-- ===== CHARACTERS (always visible) ===== -->
@@ -723,11 +730,12 @@ const wordSets = [
 
 // ===== STATE =====
 let currentSetId = null;
+let step1Words = [];       // Step1で選ばれた単語セット（Step2でも使い回す）
 let currentWords = [];
 let currentIndex = 0;
 let currentStep = 1; // 1 or 2
-let typedCount = 0;
-let wrongWords = [];
+let step1WrongWords = [];  // Step1のミス単語
+let step2WrongWords = [];  // Step2のミス単語
 let wrongInThisWord = false;
 let audioCtx = null;
 
@@ -837,11 +845,12 @@ function selectWordSet(id) {
 
 function selectCount(n) {
   const set = wordSets.find(s => s.id === currentSetId);
-  const shuffled = shuffle([...set.words]);
-  currentWords = shuffled.slice(0, n);
+  step1Words = shuffle([...set.words]).slice(0, n);
+  currentWords = [...step1Words];
   currentIndex = 0;
   currentStep = 1;
-  wrongWords = [];
+  step1WrongWords = [];
+  step2WrongWords = [];
   startStudy();
 }
 
@@ -985,11 +994,12 @@ function wordComplete() {
   document.getElementById('feedbackMsg').textContent = '○ 正解！';
   document.getElementById('feedbackMsg').className = 'feedback-msg correct';
 
-  // Record wrong words for Step 1 and Step 2
+  // ステップ別にミス単語を記録
   if (wrongInThisWord) {
     const w = currentWords[currentIndex];
-    if (!wrongWords.find(x => x.english === w.english)) {
-      wrongWords.push(w);
+    const target = currentStep === 1 ? step1WrongWords : step2WrongWords;
+    if (!target.find(x => x.english === w.english)) {
+      target.push(w);
     }
   }
 
@@ -1024,8 +1034,19 @@ function shakeDisplay() {
 // ===== STEP COMPLETE =====
 function stepComplete() {
   if (currentStep === 1) {
-    const reviewBtn = document.getElementById('step1ReviewBtn');
-    reviewBtn.style.display = wrongWords.length > 0 ? '' : 'none';
+    document.getElementById('step1ReviewBtn').style.display = step1WrongWords.length > 0 ? '' : 'none';
+    const list = document.getElementById('step1ReviewList');
+    if (step1WrongWords.length > 0) {
+      list.innerHTML = '<div style="width:100%;max-width:480px;text-align:left">' +
+        '<p style="font-size:14px;color:#f44336;font-weight:700;margin-bottom:8px">間違えた単語（' + step1WrongWords.length + '語）</p>' +
+        step1WrongWords.map(w =>
+          '<div style="display:flex;justify-content:space-between;background:#fff5f5;border:1px solid #ffcdd2;border-radius:10px;padding:10px 16px;margin-bottom:6px;font-size:15px">' +
+          '<span style="color:#888">' + w.japanese + '</span>' +
+          '<span style="font-weight:700;color:#f44336">' + w.english + '</span></div>'
+        ).join('') + '</div>';
+    } else {
+      list.innerHTML = '<p style="color:#4caf50;font-size:16px;font-weight:700">🎉 全問ノーミス！</p>';
+    }
     document.getElementById('step1CompleteOverlay').classList.add('active');
   } else {
     showResult();
@@ -1034,29 +1055,29 @@ function stepComplete() {
 
 function closeOverlay() {
   document.getElementById('step1CompleteOverlay').classList.remove('active');
-  shuffle(currentWords);
+  currentWords = shuffle([...step1Words]);
   currentIndex = 0;
-  wrongWords = [];
+  step1WrongWords = [];
   loadWord();
 }
 
 function reviewWrongFromStep1() {
-  if (!wrongWords.length) return;
+  if (!step1WrongWords.length) return;
   document.getElementById('step1CompleteOverlay').classList.remove('active');
-  currentWords = shuffle([...wrongWords]);
+  currentWords = shuffle([...step1WrongWords]);
   currentStep = 1;
   currentIndex = 0;
-  wrongWords = [];
+  step1WrongWords = [];
   showScreen('studyScreen');
   loadWord();
 }
 
 function startStep2() {
   document.getElementById('step1CompleteOverlay').classList.remove('active');
-  shuffle(currentWords);
+  currentWords = shuffle([...step1Words]);
   currentStep = 2;
   currentIndex = 0;
-  wrongWords = [];
+  step2WrongWords = [];
   loadWord();
 }
 
@@ -1072,8 +1093,8 @@ function showResult() {
   const set = wordSets.find(s => s.id === currentSetId);
   document.getElementById('resultTitle').textContent = `${set.title} チャレンジ完了！`;
 
-  const total = currentWords.length;
-  const wrong = wrongWords.length;
+  const total = step1Words.length;
+  const wrong = step2WrongWords.length;
   const correct = total - wrong;
 
   document.getElementById('resultStats').innerHTML = `
@@ -1092,9 +1113,9 @@ function showResult() {
   `;
 
   const reviewEl = document.getElementById('reviewSection');
-  if (wrongWords.length > 0) {
-    reviewEl.innerHTML = `<h3>復習しよう！ (${wrongWords.length}語)</h3>` +
-      wrongWords.map(w => `
+  if (step2WrongWords.length > 0) {
+    reviewEl.innerHTML = `<h3>復習しよう！ (${step2WrongWords.length}語)</h3>` +
+      step2WrongWords.map(w => `
         <div class="review-word">
           <span class="rw-jp">${w.japanese}</span>
           <span class="rw-en">${w.english}</span>
@@ -1106,30 +1127,32 @@ function showResult() {
 
   document.getElementById('resultBtns').innerHTML = `
     <button class="action-btn visible" style="margin-top:0" onclick="retryStep2()">もう一度チャレンジ</button>
-    ${wrongWords.length > 0 ? `<button class="outline-btn" onclick="retryWrongOnly()">間違えた単語を復習する</button>` : ''}
-    <button class="outline-btn" onclick="goTop()">メニューへ戻る</button>
+    ${step2WrongWords.length > 0 ? `<button class="outline-btn" onclick="retryWrongOnly()">間違えた単語を復習する</button>` : ''}
+    <button class="outline-btn" onclick="goTop()">単語集を選ぶ</button>
   `;
 }
 
 function retryStep2() {
+  currentWords = shuffle([...step1Words]);
   currentStep = 2;
   currentIndex = 0;
-  wrongWords = [];
+  step2WrongWords = [];
   showScreen('studyScreen');
   loadWord();
 }
 
 function retryWrongOnly() {
-  if (!wrongWords.length) return;
-  currentWords = [...wrongWords];
+  if (!step2WrongWords.length) return;
+  currentWords = shuffle([...step2WrongWords]);
   currentStep = 1;
   currentIndex = 0;
-  wrongWords = [];
+  step2WrongWords = [];
   showScreen('studyScreen');
   loadWord();
 }
 
 function goTop() {
+  document.getElementById('step1CompleteOverlay').classList.remove('active');
   document.getElementById('titleBar').textContent = '英単語タイピング';
   showScreen('topScreen');
 }
