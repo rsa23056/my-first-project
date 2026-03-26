@@ -161,6 +161,11 @@
     border-bottom: 3px solid #5bc4d4;
     animation: blink 0.8s infinite;
   }
+  .char-cursor-hidden {
+    color: transparent;
+    border-bottom: 3px solid #5bc4d4;
+    animation: blink 0.8s infinite;
+  }
   .char-pending { color: #ccc; }
 
   @keyframes blink {
@@ -889,14 +894,19 @@ function loadWord() {
 function renderTypingDisplay() {
   const display = document.getElementById('typingDisplay');
   display.innerHTML = '';
+  const hintRevealed = currentStep !== 2 || wrongInThisWord;
   for (let i = 0; i < currentWord.length; i++) {
+    const ch = currentWord[i] === ' ' ? '\u00a0' : currentWord[i];
     const span = document.createElement('span');
-    span.textContent = currentWord[i] === ' ' ? '\u00a0' : currentWord[i];
     if (i < typedChars) {
+      span.textContent = ch;
       span.className = 'char-done';
     } else if (i === typedChars) {
-      span.className = 'char-cursor';
+      span.textContent = ch;
+      span.className = hintRevealed ? 'char-cursor' : 'char-cursor-hidden';
     } else {
+      if (!hintRevealed) continue; // Step2 before first mistake: hide future chars
+      span.textContent = ch;
       span.className = 'char-pending';
     }
     display.appendChild(span);
@@ -960,13 +970,13 @@ function handleKey(e) {
     document.getElementById('feedbackMsg').textContent = '× もう一度！';
     document.getElementById('feedbackMsg').className = 'feedback-msg incorrect';
 
-    // Step 2: reveal hint on first mistake
+    // Step 2: reveal grey chars on first mistake
     if (currentStep === 2 && !wrongInThisWord) {
-      document.getElementById('hintReveal').textContent = '→ ' + currentWord;
+      wrongInThisWord = true;
+      renderTypingDisplay();
+    } else {
       wrongInThisWord = true;
     }
-
-    if (!wrongInThisWord || currentStep === 1) wrongInThisWord = true;
   }
 }
 
