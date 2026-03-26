@@ -535,6 +535,8 @@
   <p>すべての単語を練習しました。<br>チャレンジモードに挑戦しよう！</p>
   <button class="action-btn visible" style="margin-top:0" onclick="startStep2()">Step 2 へ進む →</button>
   <button class="outline-btn" onclick="closeOverlay()">もう一度 Step 1 を練習する</button>
+  <button class="outline-btn" id="step1ReviewBtn" onclick="reviewWrongFromStep1()" style="display:none">間違えた単語を復習する</button>
+  <button class="outline-btn" onclick="goTop()">メニューへ戻る</button>
 </div>
 
 <!-- ===== CHARACTERS (always visible) ===== -->
@@ -973,8 +975,8 @@ function wordComplete() {
   document.getElementById('feedbackMsg').textContent = '○ 正解！';
   document.getElementById('feedbackMsg').className = 'feedback-msg correct';
 
-  // Record wrong words for Step 2
-  if (currentStep === 2 && wrongInThisWord) {
+  // Record wrong words for Step 1 and Step 2
+  if (wrongInThisWord) {
     const w = currentWords[currentIndex];
     if (!wrongWords.find(x => x.english === w.english)) {
       wrongWords.push(w);
@@ -1012,6 +1014,8 @@ function shakeDisplay() {
 // ===== STEP COMPLETE =====
 function stepComplete() {
   if (currentStep === 1) {
+    const reviewBtn = document.getElementById('step1ReviewBtn');
+    reviewBtn.style.display = wrongWords.length > 0 ? '' : 'none';
     document.getElementById('step1CompleteOverlay').classList.add('active');
   } else {
     showResult();
@@ -1022,6 +1026,18 @@ function closeOverlay() {
   document.getElementById('step1CompleteOverlay').classList.remove('active');
   shuffle(currentWords);
   currentIndex = 0;
+  wrongWords = [];
+  loadWord();
+}
+
+function reviewWrongFromStep1() {
+  if (!wrongWords.length) return;
+  document.getElementById('step1CompleteOverlay').classList.remove('active');
+  currentWords = shuffle([...wrongWords]);
+  currentStep = 1;
+  currentIndex = 0;
+  wrongWords = [];
+  showScreen('studyScreen');
   loadWord();
 }
 
@@ -1080,13 +1096,9 @@ function showResult() {
 
   document.getElementById('resultBtns').innerHTML = `
     <button class="action-btn visible" style="margin-top:0" onclick="retryStep2()">もう一度チャレンジ</button>
-    <button class="outline-btn" onclick="goTop()">トップに戻る</button>
+    ${wrongWords.length > 0 ? `<button class="outline-btn" onclick="retryWrongOnly()">間違えた単語を復習する</button>` : ''}
+    <button class="outline-btn" onclick="goTop()">メニューへ戻る</button>
   `;
-  if (wrongWords.length > 0) {
-    document.getElementById('resultBtns').innerHTML += `
-      <button class="outline-btn" onclick="retryWrongOnly()">間違えた単語だけ練習</button>
-    `;
-  }
 }
 
 function retryStep2() {
