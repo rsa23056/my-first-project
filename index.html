@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>英単語タイピング</title>
+<title>(株)アイサン🏬 で英語タイピング</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -796,12 +796,12 @@
 <!-- Title Bar -->
 <div id="titleBar">
   <button id="backBtn" onclick="handleBackBtn()">← もどる</button>
-  <span id="titleBarText">英単語タイピング</span>
+  <span id="titleBarText">(株)アイサン🏬 で英語タイピング</span>
 </div>
 
 <!-- ===== TOP SCREEN ===== -->
 <div id="topScreen" class="screen active">
-  <h1>英単語タイピング</h1>
+  <h1>(株)アイサン🏬 で英語タイピング</h1>
   <p>単語集を選んでスタートしましょう！</p>
   <div class="card-grid" id="cardGrid"></div>
   <button class="add-set-btn" onclick="openCreateSet()">＋ 単語集を追加</button>
@@ -1717,7 +1717,7 @@ function openCreateSet() {
   document.getElementById('newEnInput').value = '';
   renderEmojiGrid();
   renderNewWordTable();
-  document.getElementById('titleBarText').textContent = '英単語タイピング・単語集を作成';
+  document.getElementById('titleBarText').textContent = '(株)アイサン🏬 で英語タイピング・単語集を作成';
   showScreen('createSetScreen');
 }
 
@@ -1777,13 +1777,13 @@ function saveNewSet() {
     sub: newSetWords.length + '単語',
     words: [...newSetWords]
   });
-  document.getElementById('titleBarText').textContent = '英単語タイピング';
+  document.getElementById('titleBarText').textContent = '(株)アイサン🏬 で英語タイピング';
   buildTopScreen();
   showScreen('topScreen');
 }
 
 function cancelCreateSet() {
-  document.getElementById('titleBarText').textContent = '英単語タイピング';
+  document.getElementById('titleBarText').textContent = '(株)アイサン🏬 で英語タイピング';
   showScreen('topScreen');
 }
 
@@ -1793,7 +1793,7 @@ function openWordList() {
   applyWlAdminMode();
   const set = wordSets.find(s => s.id === currentSetId);
   document.getElementById('wordListTitle').textContent = set.title + '・単語一覧';
-  document.getElementById('titleBarText').textContent = '英単語タイピング・単語一覧';
+  document.getElementById('titleBarText').textContent = '(株)アイサン🏬 で英語タイピング・単語一覧';
   renderWordList();
   showScreen('wordListScreen');
 }
@@ -1904,7 +1904,7 @@ function deleteWord(index) {
 function closeWordList() {
   const set = wordSets.find(s => s.id === currentSetId);
   document.getElementById('countSetName').textContent = set.title + '（' + set.words.length + '単語）';
-  document.getElementById('titleBarText').textContent = '英単語タイピング・問題数を選択';
+  document.getElementById('titleBarText').textContent = '(株)アイサン🏬 で英語タイピング・問題数を選択';
   showScreen('countScreen');
 }
 
@@ -2082,7 +2082,7 @@ function selectWordSet(id) {
   });
 
   showScreen('countScreen');
-  document.getElementById('titleBarText').textContent = '英単語タイピング・問題数を選択';
+  document.getElementById('titleBarText').textContent = '(株)アイサン🏬 で英語タイピング・問題数を選択';
 }
 
 function selectCount(n) {
@@ -2168,7 +2168,7 @@ function updateTitleBar() {
   const set = wordSets.find(s => s.id === currentSetId);
   const stepName = currentStep === 1 ? 'Step 1' : 'Step 2';
   document.getElementById('titleBarText').textContent =
-    `英単語タイピング・${set.title}・${stepName}・No.${currentIndex + 1}`;
+    `(株)アイサン🏬 で英語タイピング・${set.title}・${stepName}・No.${currentIndex + 1}`;
 }
 
 function updateProgress() {
@@ -2334,7 +2334,7 @@ function handleAction() {
 // ===== RESULT SCREEN =====
 function showResult() {
   showScreen('resultScreen');
-  document.getElementById('titleBarText').textContent = '英単語タイピング・結果';
+  document.getElementById('titleBarText').textContent = '(株)アイサン🏬 で英語タイピング・結果';
 
   const set = wordSets.find(s => s.id === currentSetId);
   document.getElementById('resultTitle').textContent = `${set.title} チャレンジ完了！`;
@@ -2402,7 +2402,7 @@ function retryWrongOnly() {
 
 function goTop() {
   document.getElementById('step1CompleteOverlay').classList.remove('active');
-  document.getElementById('titleBarText').textContent = '英単語タイピング';
+  document.getElementById('titleBarText').textContent = '(株)アイサン🏬 で英語タイピング';
   showScreen('topScreen');
 }
 
@@ -2427,7 +2427,7 @@ function handleBackBtn() {
     case 'studyScreen':
       if (confirm('問題数の選択に戻りますか？')) {
         const set = wordSets.find(s => s.id === currentSetId);
-        document.getElementById('titleBarText').textContent = '英単語タイピング・問題数を選択';
+        document.getElementById('titleBarText').textContent = '(株)アイサン🏬 で英語タイピング・問題数を選択';
         document.getElementById('countSetName').textContent = set.title + '（' + set.words.length + '単語）';
         showScreen('countScreen');
       }
@@ -2441,7 +2441,7 @@ function handleBackBtn() {
 function confirmBackToCount() {
   if (confirm('問題数の選択に戻りますか？')) {
     const set = wordSets.find(s => s.id === currentSetId);
-    document.getElementById('titleBarText').textContent = '英単語タイピング・問題数を選択';
+    document.getElementById('titleBarText').textContent = '(株)アイサン🏬 で英語タイピング・問題数を選択';
     document.getElementById('countSetName').textContent = set.title + '（' + set.words.length + '単語）';
     showScreen('countScreen');
   }
