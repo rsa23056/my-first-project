@@ -24,7 +24,23 @@
     color: #555;
     font-weight: 500;
     letter-spacing: 0.03em;
+    display: flex;
+    align-items: center;
+    gap: 10px;
   }
+  #titleBar #backBtn {
+    display: none;
+    background: none;
+    border: none;
+    font-size: 14px;
+    color: #888;
+    cursor: pointer;
+    padding: 0;
+    flex-shrink: 0;
+    font-family: inherit;
+  }
+  #titleBar #backBtn:hover { color: #555; }
+  #titleBarText { flex: 1; }
 
   /* ===== SCREENS ===== */
   .screen { display: none; flex: 1; }
@@ -758,7 +774,10 @@
 <body>
 
 <!-- Title Bar -->
-<div id="titleBar">英単語タイピング</div>
+<div id="titleBar">
+  <button id="backBtn" onclick="confirmBackToCount()">← もどる</button>
+  <span id="titleBarText">英単語タイピング</span>
+</div>
 
 <!-- ===== TOP SCREEN ===== -->
 <div id="topScreen" class="screen active">
@@ -1675,7 +1694,7 @@ function openCreateSet() {
   document.getElementById('newEnInput').value = '';
   renderEmojiGrid();
   renderNewWordTable();
-  document.getElementById('titleBar').textContent = '英単語タイピング・単語集を作成';
+  document.getElementById('titleBarText').textContent = '英単語タイピング・単語集を作成';
   showScreen('createSetScreen');
 }
 
@@ -1735,13 +1754,13 @@ function saveNewSet() {
     sub: newSetWords.length + '単語',
     words: [...newSetWords]
   });
-  document.getElementById('titleBar').textContent = '英単語タイピング';
+  document.getElementById('titleBarText').textContent = '英単語タイピング';
   buildTopScreen();
   showScreen('topScreen');
 }
 
 function cancelCreateSet() {
-  document.getElementById('titleBar').textContent = '英単語タイピング';
+  document.getElementById('titleBarText').textContent = '英単語タイピング';
   showScreen('topScreen');
 }
 
@@ -1749,7 +1768,7 @@ function cancelCreateSet() {
 function openWordList() {
   const set = wordSets.find(s => s.id === currentSetId);
   document.getElementById('wordListTitle').textContent = set.title + '・単語一覧';
-  document.getElementById('titleBar').textContent = '英単語タイピング・単語一覧';
+  document.getElementById('titleBarText').textContent = '英単語タイピング・単語一覧';
   renderWordList();
   showScreen('wordListScreen');
 }
@@ -1830,7 +1849,7 @@ function deleteWord(index) {
 function closeWordList() {
   const set = wordSets.find(s => s.id === currentSetId);
   document.getElementById('countSetName').textContent = set.title + '（' + set.words.length + '単語）';
-  document.getElementById('titleBar').textContent = '英単語タイピング・問題数を選択';
+  document.getElementById('titleBarText').textContent = '英単語タイピング・問題数を選択';
   showScreen('countScreen');
 }
 
@@ -2008,7 +2027,7 @@ function selectWordSet(id) {
   });
 
   showScreen('countScreen');
-  document.getElementById('titleBar').textContent = '英単語タイピング・問題数を選択';
+  document.getElementById('titleBarText').textContent = '英単語タイピング・問題数を選択';
 }
 
 function selectCount(n) {
@@ -2093,7 +2112,7 @@ function renderTypingDisplay() {
 function updateTitleBar() {
   const set = wordSets.find(s => s.id === currentSetId);
   const stepName = currentStep === 1 ? 'Step 1' : 'Step 2';
-  document.getElementById('titleBar').textContent =
+  document.getElementById('titleBarText').textContent =
     `英単語タイピング・${set.title}・${stepName}・No.${currentIndex + 1}`;
 }
 
@@ -2260,7 +2279,7 @@ function handleAction() {
 // ===== RESULT SCREEN =====
 function showResult() {
   showScreen('resultScreen');
-  document.getElementById('titleBar').textContent = '英単語タイピング・結果';
+  document.getElementById('titleBarText').textContent = '英単語タイピング・結果';
 
   const set = wordSets.find(s => s.id === currentSetId);
   document.getElementById('resultTitle').textContent = `${set.title} チャレンジ完了！`;
@@ -2328,7 +2347,7 @@ function retryWrongOnly() {
 
 function goTop() {
   document.getElementById('step1CompleteOverlay').classList.remove('active');
-  document.getElementById('titleBar').textContent = '英単語タイピング';
+  document.getElementById('titleBarText').textContent = '英単語タイピング';
   showScreen('topScreen');
 }
 
@@ -2336,6 +2355,16 @@ function goTop() {
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
+  document.getElementById('backBtn').style.display = (id === 'studyScreen') ? 'inline' : 'none';
+}
+
+function confirmBackToCount() {
+  if (confirm('問題数の選択に戻りますか？')) {
+    const set = wordSets.find(s => s.id === currentSetId);
+    document.getElementById('titleBarText').textContent = '英単語タイピング・問題数を選択';
+    document.getElementById('countSetName').textContent = set.title + '（' + set.words.length + '単語）';
+    showScreen('countScreen');
+  }
 }
 
 // ===== INIT =====
