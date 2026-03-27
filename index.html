@@ -561,16 +561,6 @@
     text-decoration: underline;
   }
   .back-btn:hover { color: #555; }
-  #countBackBtn {
-    background: #f5f5f5;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    color: #555;
-    font-size: 14px;
-    padding: 6px 14px;
-    text-decoration: none;
-  }
-  #countBackBtn:hover { background: #ebebeb; }
 
   /* ===== SPEAK BUTTON (small, reusable) ===== */
   .speak-sm-btn {
@@ -805,7 +795,7 @@
 
 <!-- Title Bar -->
 <div id="titleBar">
-  <button id="backBtn" onclick="confirmBackToCount()">← もどる</button>
+  <button id="backBtn" onclick="handleBackBtn()">← もどる</button>
   <span id="titleBarText">英単語タイピング</span>
 </div>
 
@@ -849,7 +839,6 @@
   <div class="set-name" id="countSetName"></div>
   <div class="count-grid" id="countGrid"></div>
   <button class="outline-btn" onclick="openWordList()" style="font-size:14px;padding:10px 24px">出題単語一覧</button>
-  <button class="back-btn" id="countBackBtn" onclick="goTop()">← 単語集を選び直す</button>
 </div>
 
 <!-- ===== WORD LIST SCREEN ===== -->
@@ -2421,7 +2410,32 @@ function goTop() {
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
-  document.getElementById('backBtn').style.display = (id === 'studyScreen') ? 'inline' : 'none';
+  const showBack = ['countScreen', 'wordListScreen', 'studyScreen', 'resultScreen'].includes(id);
+  document.getElementById('backBtn').style.display = showBack ? 'inline' : 'none';
+}
+
+function handleBackBtn() {
+  const active = document.querySelector('.screen.active');
+  if (!active) return;
+  switch (active.id) {
+    case 'countScreen':
+      goTop();
+      break;
+    case 'wordListScreen':
+      closeWordList();
+      break;
+    case 'studyScreen':
+      if (confirm('問題数の選択に戻りますか？')) {
+        const set = wordSets.find(s => s.id === currentSetId);
+        document.getElementById('titleBarText').textContent = '英単語タイピング・問題数を選択';
+        document.getElementById('countSetName').textContent = set.title + '（' + set.words.length + '単語）';
+        showScreen('countScreen');
+      }
+      break;
+    case 'resultScreen':
+      goTop();
+      break;
+  }
 }
 
 function confirmBackToCount() {
