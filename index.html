@@ -1655,6 +1655,23 @@ const GROUPS = [
 ];
 const groupOpenState = {};
 
+// 各Partの全単語をまとめた単語帳を生成してwordSetsに追加
+const PART_ALL_DEFS = [
+  { id: 'part1_all', title: 'Part-1 全単語', icon: '📚', groupIndex: 0 },
+  { id: 'part2_all', title: 'Part-2 全単語', icon: '🏠', groupIndex: 1 },
+  { id: 'part3_all', title: 'Part-3 全単語', icon: '👨‍👩‍👧', groupIndex: 2 },
+  { id: 'part4_all', title: 'Part-4 全単語', icon: '⭐', groupIndex: 3 },
+];
+PART_ALL_DEFS.forEach(def => {
+  if (wordSets.find(s => s.id === def.id)) return; // 重複防止
+  const group = GROUPS[def.groupIndex];
+  const combined = group.ids.flatMap(id => {
+    const s = wordSets.find(ws => ws.id === id);
+    return s ? s.words : [];
+  });
+  wordSets.push({ id: def.id, title: def.title, icon: def.icon, sub: combined.length + '単語', words: combined });
+});
+
 function makeCard(set) {
   const card = document.createElement('div');
   card.className = 'word-card';
@@ -1682,15 +1699,29 @@ function buildTopScreen() {
   grid.innerHTML = '';
 
   const groupedIds = GROUPS.flatMap(g => g.ids);
+  const partAllIds = PART_ALL_DEFS.map(d => d.id);
 
-  // 英検5級 + ユーザー追加分を最上段に直接表示
+  // トップ行: 英検5級 → Part-x全単語 → ユーザー追加分 の順に表示
   const topRow = document.createElement('div');
   topRow.className = 'top-cards-row';
+
+  // 1. 英検5級
+  const eiken = wordSets.find(s => s.id === 'eiken5');
+  if (eiken) topRow.appendChild(makeCard(eiken));
+
+  // 2. Part-1〜4 全単語（固定順）
+  PART_ALL_DEFS.forEach(def => {
+    const s = wordSets.find(ws => ws.id === def.id);
+    if (s) topRow.appendChild(makeCard(s));
+  });
+
+  // 3. ユーザー追加分（グループにも全単語にも含まれないもの）
   wordSets.forEach(set => {
-    if (set.id === 'eiken5' || !groupedIds.includes(set.id)) {
+    if (set.id !== 'eiken5' && !groupedIds.includes(set.id) && !partAllIds.includes(set.id)) {
       topRow.appendChild(makeCard(set));
     }
   });
+
   grid.appendChild(topRow);
 
   // アコーディオングループ（大きめカード形式）
