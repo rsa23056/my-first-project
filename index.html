@@ -591,7 +591,37 @@
   }
   .word-list-row:last-child { border-bottom: none; }
   .word-list-row .wl-jp { flex: 1; color: #555; }
-  .word-list-row .wl-en { flex: 1; font-weight: 700; color: #333; }
+  .word-list-row .wl-en {
+    flex: 1; font-weight: 700; color: #333;
+    cursor: pointer;
+    border-bottom: 1.5px solid #d0d0d0;
+    padding-bottom: 1px;
+    letter-spacing: 0.03em;
+    transition: color 0.15s;
+  }
+  .word-list-row .wl-en:hover { color: #5bc4d4; border-bottom-color: #5bc4d4; }
+
+  /* 一括表示切り替えボタン */
+  .wl-bulk-btns {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+    max-width: 600px;
+  }
+  .wl-bulk-btn {
+    flex: 1;
+    background: #e0f7fa;
+    border: 1.5px solid #5bc4d4;
+    border-radius: 10px;
+    color: #2a9db0;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 10px 0;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.15s;
+  }
+  .wl-bulk-btn:hover { background: #b2ebf2; }
   .wl-del-btn {
     background: none;
     border: 1px solid #ffcdd2;
@@ -776,6 +806,10 @@
 <!-- ===== WORD LIST SCREEN ===== -->
 <div id="wordListScreen" class="screen">
   <h2 id="wordListTitle">単語一覧</h2>
+  <div class="wl-bulk-btns">
+    <button class="wl-bulk-btn" onclick="wlHideAll()">👁 全部かくす</button>
+    <button class="wl-bulk-btn" onclick="wlRevealAll()">👁 全部みせる</button>
+  </div>
   <div class="word-list-table" id="wordListTable"></div>
   <div class="word-add-form">
     <input type="text" id="addJpInput" placeholder="日本語（例：犬）" />
@@ -1720,6 +1754,42 @@ function openWordList() {
   showScreen('wordListScreen');
 }
 
+function maskWord(word, state) {
+  if (state === 0) return word;
+  const chars = word.split('');
+  const firstIdx = state === 2 ? chars.findIndex(c => c !== ' ') : -1;
+  return chars.map((c, i) => {
+    if (c === ' ') return ' ';
+    return (state === 2 && i === firstIdx) ? c : '_';
+  }).join('');
+}
+
+function cycleWlEn(span) {
+  const set = wordSets.find(s => s.id === currentSetId);
+  const word = set.words[parseInt(span.dataset.idx)].english;
+  const state = (parseInt(span.dataset.state) + 1) % 3;
+  span.dataset.state = state;
+  span.textContent = maskWord(word, state);
+}
+
+function wlHideAll() {
+  const set = wordSets.find(s => s.id === currentSetId);
+  document.querySelectorAll('#wordListTable .wl-en').forEach(span => {
+    const word = set.words[parseInt(span.dataset.idx)].english;
+    span.dataset.state = 1;
+    span.textContent = maskWord(word, 1);
+  });
+}
+
+function wlRevealAll() {
+  const set = wordSets.find(s => s.id === currentSetId);
+  document.querySelectorAll('#wordListTable .wl-en').forEach(span => {
+    const word = set.words[parseInt(span.dataset.idx)].english;
+    span.dataset.state = 0;
+    span.textContent = word;
+  });
+}
+
 function renderWordList() {
   const set = wordSets.find(s => s.id === currentSetId);
   const table = document.getElementById('wordListTable');
@@ -1731,8 +1801,8 @@ function renderWordList() {
   table.innerHTML = set.words.map((w, i) =>
     '<div class="word-list-row">' +
     '<span class="wl-jp">' + w.japanese + '</span>' +
-    '<span class="wl-en">' + w.english + '</span>' +
-    '<button class="speak-sm-btn" onclick="speakWordText(\'' + w.english + '\')" title="発音">' + speakerSvg + '</button>' +
+    '<span class="wl-en" data-state="0" data-idx="' + i + '" onclick="cycleWlEn(this)">' + w.english + '</span>' +
+    '<button class="speak-sm-btn" onclick="speakWordText(\'' + w.english.replace(/'/g, "\\'") + '\')" title="発音">' + speakerSvg + '</button>' +
     '<button class="wl-del-btn" onclick="deleteWord(' + i + ')">削除</button>' +
     '</div>'
   ).join('');
