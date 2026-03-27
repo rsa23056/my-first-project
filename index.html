@@ -53,21 +53,28 @@
 
   .card-grid {
     display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    max-width: 700px;
+  }
+
+  .top-cards-row {
+    display: flex;
     flex-wrap: wrap;
     gap: 20px;
     justify-content: center;
-    max-width: 700px;
   }
 
   .word-card {
     background: #fff;
     border: 2px solid #e0e0e0;
     border-radius: 16px;
-    padding: 28px 36px;
+    padding: 24px 28px;
     cursor: pointer;
     transition: all 0.2s;
     text-align: center;
-    min-width: 180px;
+    min-width: 150px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.06);
   }
 
@@ -77,9 +84,65 @@
     transform: translateY(-2px);
   }
 
-  .word-card .card-icon { font-size: 36px; margin-bottom: 10px; }
-  .word-card .card-title { font-size: 18px; font-weight: 700; color: #333; margin-bottom: 4px; }
-  .word-card .card-sub { font-size: 13px; color: #aaa; }
+  .word-card .card-icon { font-size: 32px; margin-bottom: 8px; }
+  .word-card .card-title { font-size: 15px; font-weight: 700; color: #333; margin-bottom: 3px; }
+  .word-card .card-sub { font-size: 12px; color: #aaa; }
+
+  /* ===== ACCORDION GROUPS ===== */
+  .group-section {
+    border: 2px solid #e0e0e0;
+    border-radius: 16px;
+    overflow: hidden;
+  }
+
+  .group-btn {
+    width: 100%;
+    background: #f8f8f8;
+    border: none;
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 700;
+    color: #444;
+    font-family: inherit;
+    transition: background 0.2s, color 0.2s;
+    text-align: left;
+  }
+  .group-btn:hover { background: #eef9fb; }
+  .group-btn.open { background: #e0f7fa; color: #2a9db0; }
+
+  .group-btn-left { display: flex; align-items: center; gap: 10px; }
+  .group-arrow {
+    display: inline-block;
+    font-size: 11px;
+    transition: transform 0.2s;
+    color: #999;
+  }
+  .group-btn.open .group-arrow { transform: rotate(90deg); color: #2a9db0; }
+
+  .group-count {
+    font-size: 12px;
+    font-weight: 500;
+    color: #aaa;
+    background: #efefef;
+    border-radius: 99px;
+    padding: 2px 10px;
+  }
+  .group-btn.open .group-count { background: #b2ebf2; color: #2a9db0; }
+
+  .group-cards {
+    display: none;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 16px;
+    justify-content: flex-start;
+    background: #fff;
+    border-top: 1px solid #e0e0e0;
+  }
+  .group-cards.open { display: flex; }
 
   /* ===== STUDY SCREEN ===== */
   #studyScreen {
@@ -880,64 +943,6 @@ const wordSets = [
       { japanese: '鼻', english: 'nose' },
     ]
   },
-  {
-    id: 'jhs1',
-    title: '中学1年生',
-    icon: '📚',
-    sub: '50単語',
-    words: [
-      { japanese: '結婚する', english: 'marry' },
-      { japanese: '詳しい、明確な', english: 'specific' },
-      { japanese: '旅行する', english: 'travel' },
-      { japanese: '重要な', english: 'important' },
-      { japanese: '自然', english: 'nature' },
-      { japanese: '科学', english: 'science' },
-      { japanese: '質問', english: 'question' },
-      { japanese: '答え', english: 'answer' },
-      { japanese: '問題', english: 'problem' },
-      { japanese: '練習する', english: 'practice' },
-      { japanese: '覚える', english: 'remember' },
-      { japanese: '理解する', english: 'understand' },
-      { japanese: '決める', english: 'decide' },
-      { japanese: '始める', english: 'begin' },
-      { japanese: '終わる', english: 'finish' },
-      { japanese: '使う', english: 'use' },
-      { japanese: '作る', english: 'make' },
-      { japanese: '動く', english: 'move' },
-      { japanese: '変える', english: 'change' },
-      { japanese: '成長する', english: 'grow' },
-      { japanese: '買う', english: 'buy' },
-      { japanese: '売る', english: 'sell' },
-      { japanese: '送る', english: 'send' },
-      { japanese: '受け取る', english: 'receive' },
-      { japanese: '見つける', english: 'find' },
-      { japanese: '失う', english: 'lose' },
-      { japanese: '建物', english: 'building' },
-      { japanese: '橋', english: 'bridge' },
-      { japanese: '川', english: 'river' },
-      { japanese: '山', english: 'mountain' },
-      { japanese: '海', english: 'sea' },
-      { japanese: '空', english: 'sky' },
-      { japanese: '星', english: 'star' },
-      { japanese: '月', english: 'moon' },
-      { japanese: '太陽', english: 'sun' },
-      { japanese: '雨', english: 'rain' },
-      { japanese: '雪', english: 'snow' },
-      { japanese: '風', english: 'wind' },
-      { japanese: '花', english: 'flower' },
-      { japanese: '木', english: 'tree' },
-      { japanese: '葉', english: 'leaf' },
-      { japanese: '鳥', english: 'bird' },
-      { japanese: '魚', english: 'fish' },
-      { japanese: '馬', english: 'horse' },
-      { japanese: '牛', english: 'cow' },
-      { japanese: '豚', english: 'pig' },
-      { japanese: '羊', english: 'sheep' },
-      { japanese: '虫', english: 'insect' },
-      { japanese: '蝶々', english: 'butterfly' },
-      { japanese: '色', english: 'color' },
-    ]
-  },
 
   // ===== Part-1「英語のキホン」=====
   { id:'p1_1', title:'P1-①好きなスポーツ', icon:'⚽', sub:'10単語', words:[
@@ -1630,19 +1635,71 @@ function closeWordList() {
 }
 
 // ===== TOP SCREEN =====
+const GROUPS = [
+  { label: 'Part-1　英語のキホン',         ids: ['p1_1','p1_2','p1_3','p1_4','p1_5','p1_6','p1_7','p1_8','p1_9'] },
+  { label: 'Part-2　日常生活',             ids: ['p2_1','p2_2','p2_3','p2_4','p2_5','p2_6','p2_7','p2_8','p2_9','p2_10','p2_11','p2_12','p2_13'] },
+  { label: 'Part-3　身のまわりの人・もの', ids: ['p3_1','p3_2','p3_3','p3_4','p3_5','p3_6','p3_7','p3_8','p3_9','p3_10'] },
+  { label: 'Part-4　その他の重要単語',     ids: ['p4_1','p4_2','p4_3','p4_4'] },
+];
+const groupOpenState = {};
+
+function makeCard(set) {
+  const card = document.createElement('div');
+  card.className = 'word-card';
+  card.innerHTML =
+    '<div class="card-icon">' + set.icon + '</div>' +
+    '<div class="card-title">' + set.title + '</div>' +
+    '<div class="card-sub">' + set.sub + '</div>';
+  card.onclick = () => selectWordSet(set.id);
+  return card;
+}
+
 function buildTopScreen() {
   const grid = document.getElementById('cardGrid');
   grid.innerHTML = '';
+
+  const groupedIds = GROUPS.flatMap(g => g.ids);
+
+  // 英検5級 + ユーザー追加分を最上段に直接表示
+  const topRow = document.createElement('div');
+  topRow.className = 'top-cards-row';
   wordSets.forEach(set => {
-    const card = document.createElement('div');
-    card.className = 'word-card';
-    card.innerHTML = `
-      <div class="card-icon">${set.icon}</div>
-      <div class="card-title">${set.title}</div>
-      <div class="card-sub">${set.sub}</div>
-    `;
-    card.onclick = () => selectWordSet(set.id);
-    grid.appendChild(card);
+    if (set.id === 'eiken5' || !groupedIds.includes(set.id)) {
+      topRow.appendChild(makeCard(set));
+    }
+  });
+  grid.appendChild(topRow);
+
+  // アコーディオングループ
+  GROUPS.forEach((group, gi) => {
+    const sets = group.ids.map(id => wordSets.find(s => s.id === id)).filter(Boolean);
+    if (!sets.length) return;
+
+    const section = document.createElement('div');
+    section.className = 'group-section';
+
+    const btn = document.createElement('button');
+    btn.className = 'group-btn' + (groupOpenState[gi] ? ' open' : '');
+
+    const countBadge = '<span class="group-count">' + sets.length + 'セット</span>';
+    const setOpen = groupOpenState[gi];
+    btn.innerHTML =
+      '<span class="group-btn-left"><span class="group-arrow">▶</span>' + group.label + '</span>' +
+      countBadge;
+
+    const cardsDiv = document.createElement('div');
+    cardsDiv.className = 'group-cards' + (setOpen ? ' open' : '');
+    sets.forEach(s => cardsDiv.appendChild(makeCard(s)));
+
+    btn.onclick = () => {
+      groupOpenState[gi] = !groupOpenState[gi];
+      btn.classList.toggle('open');
+      cardsDiv.classList.toggle('open');
+    };
+
+    section.appendChild(btn);
+    section.appendChild(cardsDiv);
+    grid.appendChild(section);
   });
 }
 
