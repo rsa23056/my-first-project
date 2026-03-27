@@ -981,6 +981,99 @@ const wordSets = [
     ]
   },
 
+  // ===== 英検5級サブセット =====
+  { id:'eiken5_verb', title:'動詞・うごきの言葉', icon:'🏃', sub:'20単語', words:[
+    {japanese:'買う', english:'buy'},
+    {japanese:'来る', english:'come'},
+    {japanese:'する', english:'do'},
+    {japanese:'飲む', english:'drink'},
+    {japanese:'食べる', english:'eat'},
+    {japanese:'得る', english:'get'},
+    {japanese:'行く', english:'go'},
+    {japanese:'持っている・飼う', english:'have'},
+    {japanese:'知っている', english:'know'},
+    {japanese:'作る', english:'make'},
+    {japanese:'読む', english:'read'},
+    {japanese:'走る', english:'run'},
+    {japanese:'歌う', english:'sing'},
+    {japanese:'座る', english:'sit'},
+    {japanese:'話す', english:'speak'},
+    {japanese:'泳ぐ', english:'swim'},
+    {japanese:'（写真を）とる', english:'take'},
+    {japanese:'教える', english:'teach'},
+    {japanese:'思う', english:'think'},
+    {japanese:'書く', english:'write'},
+  ]},
+  { id:'eiken5_family', title:'名詞・家族', icon:'👨‍👩‍👧', sub:'5単語', words:[
+    {japanese:'家族', english:'family'},
+    {japanese:'父親', english:'father'},
+    {japanese:'母親', english:'mother'},
+    {japanese:'兄・弟', english:'brother'},
+    {japanese:'姉・妹', english:'sister'},
+  ]},
+  { id:'eiken5_season', title:'名詞・季節', icon:'🌸', sub:'5単語', words:[
+    {japanese:'季節', english:'season'},
+    {japanese:'春', english:'spring'},
+    {japanese:'夏', english:'summer'},
+    {japanese:'秋', english:'fall'},
+    {japanese:'冬', english:'winter'},
+  ]},
+  { id:'eiken5_time', title:'名詞・時・時間', icon:'⏰', sub:'7単語', words:[
+    {japanese:'年・1年', english:'year'},
+    {japanese:'月・1か月', english:'month'},
+    {japanese:'週・1週間', english:'week'},
+    {japanese:'日・1日', english:'day'},
+    {japanese:'1時間', english:'hour'},
+    {japanese:'時間・時刻', english:'time'},
+    {japanese:'週末', english:'weekend'},
+  ]},
+  { id:'eiken5_week', title:'名詞・曜日', icon:'📅', sub:'7単語', words:[
+    {japanese:'月曜日', english:'Monday'},
+    {japanese:'火曜日', english:'Tuesday'},
+    {japanese:'水曜日', english:'Wednesday'},
+    {japanese:'木曜日', english:'Thursday'},
+    {japanese:'金曜日', english:'Friday'},
+    {japanese:'土曜日', english:'Saturday'},
+    {japanese:'日曜日', english:'Sunday'},
+  ]},
+  { id:'eiken5_month', title:'名詞・月', icon:'🗓️', sub:'12単語', words:[
+    {japanese:'1月', english:'January'},
+    {japanese:'2月', english:'February'},
+    {japanese:'3月', english:'March'},
+    {japanese:'4月', english:'April'},
+    {japanese:'5月', english:'May'},
+    {japanese:'6月', english:'June'},
+    {japanese:'7月', english:'July'},
+    {japanese:'8月', english:'August'},
+    {japanese:'9月', english:'September'},
+    {japanese:'10月', english:'October'},
+    {japanese:'11月', english:'November'},
+    {japanese:'12月', english:'December'},
+  ]},
+  { id:'eiken5_adj', title:'形容詞・ようすの言葉', icon:'🌟', sub:'11単語', words:[
+    {japanese:'古い・年をとった', english:'old'},
+    {japanese:'新しい', english:'new'},
+    {japanese:'若い', english:'young'},
+    {japanese:'大きい', english:'large'},
+    {japanese:'小さい', english:'small'},
+    {japanese:'よい', english:'good'},
+    {japanese:'悪い', english:'bad'},
+    {japanese:'すべての', english:'all'},
+    {japanese:'高い', english:'high'},
+    {japanese:'晴れた', english:'sunny'},
+    {japanese:'多くの（数）', english:'many'},
+  ]},
+  { id:'eiken5_question', title:'疑問詞・質問の言葉', icon:'❓', sub:'8単語', words:[
+    {japanese:'いつ', english:'when'},
+    {japanese:'どこに・で', english:'where'},
+    {japanese:'だれ', english:'who'},
+    {japanese:'何・何の', english:'what'},
+    {japanese:'なぜ', english:'why'},
+    {japanese:'だれの', english:'whose'},
+    {japanese:'どうやって・どれくらい', english:'how'},
+    {japanese:'どちら（の）・どの・どれ', english:'which'},
+  ]},
+
   // ===== Part-1「英語のキホン」=====
   { id:'p1_1', title:'P1-①好きなスポーツ', icon:'⚽', sub:'10単語', words:[
     {japanese:'私は・私が', english:'I'},
@@ -1672,6 +1765,7 @@ function closeWordList() {
 }
 
 // ===== TOP SCREEN =====
+const EIKEN5_GROUP = { label: '英検5級', emoji: '⭐', ids: ['eiken5_verb','eiken5_family','eiken5_season','eiken5_time','eiken5_week','eiken5_month','eiken5_adj','eiken5_question'] };
 const GROUPS = [
   { label: 'Part-1　英語のキホン',         emoji: '📚', ids: ['p1_1','p1_2','p1_3','p1_4','p1_5','p1_6','p1_7','p1_8','p1_9'] },
   { label: 'Part-2　日常生活',             emoji: '🏠', ids: ['p2_1','p2_2','p2_3','p2_4','p2_5','p2_6','p2_7','p2_8','p2_9','p2_10','p2_11','p2_12','p2_13'] },
@@ -1725,6 +1819,7 @@ function buildTopScreen() {
 
   const groupedIds = GROUPS.flatMap(g => g.ids);
   const partAllIds = PART_ALL_DEFS.map(d => d.id);
+  const eiken5GroupIds = EIKEN5_GROUP.ids;
 
   // トップ行: 英検5級 → Part-x全単語 → ユーザー追加分 の順に表示
   const topRow = document.createElement('div');
@@ -1740,14 +1835,45 @@ function buildTopScreen() {
     if (s) topRow.appendChild(makeCard(s));
   });
 
-  // 3. ユーザー追加分（グループにも全単語にも含まれないもの）
+  // 3. ユーザー追加分（グループにも全単語にも英検5級サブセットにも含まれないもの）
   wordSets.forEach(set => {
-    if (set.id !== 'eiken5' && !groupedIds.includes(set.id) && !partAllIds.includes(set.id)) {
+    if (set.id !== 'eiken5' && !groupedIds.includes(set.id) && !partAllIds.includes(set.id) && !eiken5GroupIds.includes(set.id)) {
       topRow.appendChild(makeCard(set));
     }
   });
 
   grid.appendChild(topRow);
+
+  // 英検5級アコーディオン（Part-1〜4の前）
+  (function() {
+    const sets = EIKEN5_GROUP.ids.map(id => wordSets.find(s => s.id === id)).filter(Boolean);
+    if (!sets.length) return;
+    const section = document.createElement('div');
+    section.className = 'group-section';
+    const isOpen = !!groupOpenState['eiken5'];
+    const btn = document.createElement('button');
+    btn.className = 'group-btn' + (isOpen ? ' open' : '');
+    btn.innerHTML =
+      '<span class="group-btn-left">' +
+        '<span class="group-btn-emoji">' + EIKEN5_GROUP.emoji + '</span>' +
+        '<span class="group-btn-text">' +
+          '<span class="group-btn-title">' + EIKEN5_GROUP.label + '</span>' +
+          '<span class="group-btn-sub">' + sets.length + 'セット</span>' +
+        '</span>' +
+      '</span>' +
+      '<span class="group-arrow">▶</span>';
+    const cardsDiv = document.createElement('div');
+    cardsDiv.className = 'group-cards' + (isOpen ? ' open' : '');
+    sets.forEach(s => cardsDiv.appendChild(makeSubCard(s)));
+    btn.onclick = () => {
+      groupOpenState['eiken5'] = !groupOpenState['eiken5'];
+      btn.classList.toggle('open');
+      cardsDiv.classList.toggle('open');
+    };
+    section.appendChild(btn);
+    section.appendChild(cardsDiv);
+    grid.appendChild(section);
+  })();
 
   // アコーディオングループ（大きめカード形式）
   GROUPS.forEach((group, gi) => {
