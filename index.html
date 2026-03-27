@@ -590,6 +590,25 @@
     font-weight: 700;
     color: #333;
   }
+  .wl-title-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    max-width: 600px;
+  }
+  .wl-title-row h2 { flex: 1; }
+  #wlAdminBtn {
+    background: none;
+    border: none;
+    font-size: 13px;
+    color: #aaa;
+    cursor: pointer;
+    padding: 4px 6px;
+    font-family: inherit;
+    flex-shrink: 0;
+  }
+  #wlAdminBtn.active { color: #5bc4d4; }
   .word-list-table {
     width: 100%;
     max-width: 600px;
@@ -824,13 +843,16 @@
 
 <!-- ===== WORD LIST SCREEN ===== -->
 <div id="wordListScreen" class="screen">
-  <h2 id="wordListTitle">単語一覧</h2>
+  <div class="wl-title-row">
+    <h2 id="wordListTitle">単語一覧</h2>
+    <button id="wlAdminBtn" onclick="toggleWlAdmin()">🔒 管理</button>
+  </div>
   <div class="wl-bulk-btns">
     <button class="wl-bulk-btn" onclick="wlHideAll()">👁 全部かくす</button>
     <button class="wl-bulk-btn" onclick="wlRevealAll()">👁 全部みせる</button>
   </div>
   <div class="word-list-table" id="wordListTable"></div>
-  <div class="word-add-form">
+  <div class="word-add-form" id="wlAddForm" style="display:none">
     <input type="text" id="addJpInput" placeholder="日本語（例：犬）" />
     <input type="text" id="addEnInput" placeholder="英語（例：dog）" />
     <button onclick="addWord()">追加</button>
@@ -1570,6 +1592,7 @@ const wordSets = [
 
 // ===== STATE =====
 let currentSetId = null;
+let wlAdminMode = false;
 let step1Words = [];       // Step1で選ばれた単語セット（Step2でも使い回す）
 let currentWords = [];
 let currentIndex = 0;
@@ -1766,11 +1789,43 @@ function cancelCreateSet() {
 
 // ===== WORD LIST SCREEN =====
 function openWordList() {
+  wlAdminMode = false;
+  applyWlAdminMode();
   const set = wordSets.find(s => s.id === currentSetId);
   document.getElementById('wordListTitle').textContent = set.title + '・単語一覧';
   document.getElementById('titleBarText').textContent = '英単語タイピング・単語一覧';
   renderWordList();
   showScreen('wordListScreen');
+}
+
+function applyWlAdminMode() {
+  const btn = document.getElementById('wlAdminBtn');
+  const form = document.getElementById('wlAddForm');
+  btn.textContent = wlAdminMode ? '🔓 管理中' : '🔒 管理';
+  btn.classList.toggle('active', wlAdminMode);
+  form.style.display = wlAdminMode ? 'flex' : 'none';
+  // 削除ボタンの表示切り替え
+  document.querySelectorAll('#wordListTable .wl-del-btn').forEach(b => {
+    b.style.display = wlAdminMode ? 'inline-block' : 'none';
+  });
+}
+
+function toggleWlAdmin() {
+  if (!wlAdminMode) {
+    const pw = prompt('パスワードを入力してください');
+    if (pw === null) return;
+    if (pw === '1234') {
+      wlAdminMode = true;
+      applyWlAdminMode();
+    } else {
+      alert('パスワードが違います');
+    }
+  } else {
+    if (confirm('管理者モードを終了しますか？')) {
+      wlAdminMode = false;
+      applyWlAdminMode();
+    }
+  }
 }
 
 function maskWord(word, state) {
@@ -1822,7 +1877,7 @@ function renderWordList() {
     '<span class="wl-jp">' + w.japanese + '</span>' +
     '<span class="wl-en" data-state="0" data-idx="' + i + '" onclick="cycleWlEn(this)">' + w.english + '</span>' +
     '<button class="speak-sm-btn" onclick="speakWordText(\'' + w.english.replace(/'/g, "\\'") + '\')" title="発音">' + speakerSvg + '</button>' +
-    '<button class="wl-del-btn" onclick="deleteWord(' + i + ')">削除</button>' +
+    '<button class="wl-del-btn" onclick="deleteWord(' + i + ')" style="display:' + (wlAdminMode ? 'inline-block' : 'none') + '">削除</button>' +
     '</div>'
   ).join('');
 }
