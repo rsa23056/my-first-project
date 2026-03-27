@@ -1791,12 +1791,16 @@ function selectWordSet(id) {
   const set = wordSets.find(s => s.id === id);
   document.getElementById('countSetName').textContent = set.title + '（' + set.words.length + '単語）';
 
-  const options = [10, 20, 30, set.words.length];
-  const labels = ['10問', '20問', '30問', '全問'];
+  const total = set.words.length;
+  const isSmall = total <= 10;
+  const options = isSmall ? [3, 5, total] : [10, 20, 30, total];
+  const labels  = isSmall ? ['3問', '5問', '全問'] : ['10問', '20問', '30問', '全問'];
   const grid = document.getElementById('countGrid');
   grid.innerHTML = '';
   options.forEach((n, i) => {
-    const actual = Math.min(n, set.words.length);
+    const actual = Math.min(n, total);
+    // 大きいセットで全問が直前の選択肢と同値になる場合は省略
+    if (!isSmall && i === options.length - 1 && actual === options[i - 1]) return;
     const card = document.createElement('div');
     card.className = 'count-card';
     card.innerHTML = `
