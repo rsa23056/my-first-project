@@ -51,98 +51,110 @@
     text-align: center;
   }
 
+  /* ===== TOP CARD GRID ===== */
   .card-grid {
     display: flex;
     flex-direction: column;
     gap: 12px;
     width: 100%;
-    max-width: 700px;
+    max-width: 580px;
   }
 
   .top-cards-row {
     display: flex;
     flex-wrap: wrap;
-    gap: 20px;
+    gap: 16px;
     justify-content: center;
   }
 
+  /* 英検5級・ユーザー追加カード */
   .word-card {
     background: #fff;
     border: 2px solid #e0e0e0;
     border-radius: 16px;
-    padding: 24px 28px;
+    padding: 24px 36px;
     cursor: pointer;
     transition: all 0.2s;
     text-align: center;
-    min-width: 150px;
+    min-width: 160px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.06);
   }
-
   .word-card:hover {
     border-color: #5bc4d4;
     box-shadow: 0 4px 16px rgba(91,196,212,0.2);
     transform: translateY(-2px);
   }
-
-  .word-card .card-icon { font-size: 32px; margin-bottom: 8px; }
-  .word-card .card-title { font-size: 15px; font-weight: 700; color: #333; margin-bottom: 3px; }
-  .word-card .card-sub { font-size: 12px; color: #aaa; }
+  .word-card .card-icon { font-size: 36px; margin-bottom: 10px; }
+  .word-card .card-title { font-size: 17px; font-weight: 700; color: #333; margin-bottom: 4px; }
+  .word-card .card-sub { font-size: 13px; color: #aaa; }
 
   /* ===== ACCORDION GROUPS ===== */
   .group-section {
     border: 2px solid #e0e0e0;
     border-radius: 16px;
     overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
   }
 
   .group-btn {
     width: 100%;
-    background: #f8f8f8;
+    background: #fff;
     border: none;
-    padding: 14px 20px;
+    padding: 18px 20px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     cursor: pointer;
-    font-size: 15px;
-    font-weight: 700;
-    color: #444;
     font-family: inherit;
-    transition: background 0.2s, color 0.2s;
-    text-align: left;
+    transition: background 0.2s;
   }
-  .group-btn:hover { background: #eef9fb; }
-  .group-btn.open { background: #e0f7fa; color: #2a9db0; }
+  .group-btn:hover { background: #f5feff; }
+  .group-btn.open { background: #e0f7fa; }
 
-  .group-btn-left { display: flex; align-items: center; gap: 10px; }
+  .group-btn-left { display: flex; align-items: center; gap: 14px; }
+  .group-btn-emoji { font-size: 28px; line-height: 1; }
+  .group-btn-text { text-align: left; }
+  .group-btn-title { font-size: 16px; font-weight: 700; color: #333; }
+  .group-btn-sub { font-size: 12px; color: #aaa; margin-top: 2px; }
+  .group-btn.open .group-btn-title { color: #2a9db0; }
+  .group-btn.open .group-btn-sub { color: #5bc4d4; }
+
   .group-arrow {
-    display: inline-block;
-    font-size: 11px;
-    transition: transform 0.2s;
-    color: #999;
+    font-size: 13px;
+    color: #bbb;
+    transition: transform 0.25s;
+    flex-shrink: 0;
   }
   .group-btn.open .group-arrow { transform: rotate(90deg); color: #2a9db0; }
 
-  .group-count {
-    font-size: 12px;
-    font-weight: 500;
-    color: #aaa;
-    background: #efefef;
-    border-radius: 99px;
-    padding: 2px 10px;
-  }
-  .group-btn.open .group-count { background: #b2ebf2; color: #2a9db0; }
-
+  /* 展開後の小カードエリア */
   .group-cards {
     display: none;
     flex-wrap: wrap;
-    gap: 12px;
-    padding: 16px;
-    justify-content: flex-start;
-    background: #fff;
-    border-top: 1px solid #e0e0e0;
+    gap: 8px;
+    padding: 12px 14px;
+    background: #f7fdfe;
+    border-top: 1px solid #d0eef2;
   }
   .group-cards.open { display: flex; }
+
+  /* グループ内の小さい単語集カード */
+  .sub-word-card {
+    background: #fff;
+    border: 1.5px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 10px 14px;
+    cursor: pointer;
+    transition: all 0.18s;
+    text-align: center;
+    flex: 1;
+    min-width: 120px;
+    max-width: 180px;
+  }
+  .sub-word-card:hover { border-color: #5bc4d4; background: #f0fafb; transform: translateY(-1px); }
+  .sub-word-card .card-icon { font-size: 20px; margin-bottom: 4px; }
+  .sub-word-card .card-title { font-size: 12px; font-weight: 700; color: #333; line-height: 1.3; }
+  .sub-word-card .card-sub { font-size: 11px; color: #aaa; margin-top: 2px; }
 
   /* ===== STUDY SCREEN ===== */
   #studyScreen {
@@ -1636,16 +1648,27 @@ function closeWordList() {
 
 // ===== TOP SCREEN =====
 const GROUPS = [
-  { label: 'Part-1　英語のキホン',         ids: ['p1_1','p1_2','p1_3','p1_4','p1_5','p1_6','p1_7','p1_8','p1_9'] },
-  { label: 'Part-2　日常生活',             ids: ['p2_1','p2_2','p2_3','p2_4','p2_5','p2_6','p2_7','p2_8','p2_9','p2_10','p2_11','p2_12','p2_13'] },
-  { label: 'Part-3　身のまわりの人・もの', ids: ['p3_1','p3_2','p3_3','p3_4','p3_5','p3_6','p3_7','p3_8','p3_9','p3_10'] },
-  { label: 'Part-4　その他の重要単語',     ids: ['p4_1','p4_2','p4_3','p4_4'] },
+  { label: 'Part-1　英語のキホン',         emoji: '📚', ids: ['p1_1','p1_2','p1_3','p1_4','p1_5','p1_6','p1_7','p1_8','p1_9'] },
+  { label: 'Part-2　日常生活',             emoji: '🏠', ids: ['p2_1','p2_2','p2_3','p2_4','p2_5','p2_6','p2_7','p2_8','p2_9','p2_10','p2_11','p2_12','p2_13'] },
+  { label: 'Part-3　身のまわりの人・もの', emoji: '👥', ids: ['p3_1','p3_2','p3_3','p3_4','p3_5','p3_6','p3_7','p3_8','p3_9','p3_10'] },
+  { label: 'Part-4　その他の重要単語',     emoji: '⭐', ids: ['p4_1','p4_2','p4_3','p4_4'] },
 ];
 const groupOpenState = {};
 
 function makeCard(set) {
   const card = document.createElement('div');
   card.className = 'word-card';
+  card.innerHTML =
+    '<div class="card-icon">' + set.icon + '</div>' +
+    '<div class="card-title">' + set.title + '</div>' +
+    '<div class="card-sub">' + set.sub + '</div>';
+  card.onclick = () => selectWordSet(set.id);
+  return card;
+}
+
+function makeSubCard(set) {
+  const card = document.createElement('div');
+  card.className = 'sub-word-card';
   card.innerHTML =
     '<div class="card-icon">' + set.icon + '</div>' +
     '<div class="card-title">' + set.title + '</div>' +
@@ -1670,7 +1693,7 @@ function buildTopScreen() {
   });
   grid.appendChild(topRow);
 
-  // アコーディオングループ
+  // アコーディオングループ（大きめカード形式）
   GROUPS.forEach((group, gi) => {
     const sets = group.ids.map(id => wordSets.find(s => s.id === id)).filter(Boolean);
     if (!sets.length) return;
@@ -1678,18 +1701,22 @@ function buildTopScreen() {
     const section = document.createElement('div');
     section.className = 'group-section';
 
+    const isOpen = !!groupOpenState[gi];
     const btn = document.createElement('button');
-    btn.className = 'group-btn' + (groupOpenState[gi] ? ' open' : '');
-
-    const countBadge = '<span class="group-count">' + sets.length + 'セット</span>';
-    const setOpen = groupOpenState[gi];
+    btn.className = 'group-btn' + (isOpen ? ' open' : '');
     btn.innerHTML =
-      '<span class="group-btn-left"><span class="group-arrow">▶</span>' + group.label + '</span>' +
-      countBadge;
+      '<span class="group-btn-left">' +
+        '<span class="group-btn-emoji">' + group.emoji + '</span>' +
+        '<span class="group-btn-text">' +
+          '<span class="group-btn-title">' + group.label + '</span>' +
+          '<span class="group-btn-sub">' + sets.length + 'セット</span>' +
+        '</span>' +
+      '</span>' +
+      '<span class="group-arrow">▶</span>';
 
     const cardsDiv = document.createElement('div');
-    cardsDiv.className = 'group-cards' + (setOpen ? ' open' : '');
-    sets.forEach(s => cardsDiv.appendChild(makeCard(s)));
+    cardsDiv.className = 'group-cards' + (isOpen ? ' open' : '');
+    sets.forEach(s => cardsDiv.appendChild(makeSubCard(s)));
 
     btn.onclick = () => {
       groupOpenState[gi] = !groupOpenState[gi];
