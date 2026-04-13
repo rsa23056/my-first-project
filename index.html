@@ -1,0 +1,2454 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>(株)アイサン🏬 で英語タイピング</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', 'Hiragino Sans', 'Meiryo', sans-serif;
+    background: #fff;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ===== TITLE BAR ===== */
+  #titleBar {
+    background: #fff;
+    border-bottom: 1px solid #e0e0e0;
+    padding: 10px 20px;
+    font-size: 14px;
+    color: #555;
+    font-weight: 500;
+    letter-spacing: 0.03em;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  #titleBar #backBtn {
+    display: none;
+    background: #f5f5f5;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #555;
+    cursor: pointer;
+    padding: 6px 14px;
+    flex-shrink: 0;
+    font-family: inherit;
+  }
+  #titleBar #backBtn:hover { background: #ebebeb; }
+  #titleBarText { flex: 1; }
+
+  /* ===== SCREENS ===== */
+  .screen { display: none; flex: 1; }
+  .screen.active { display: flex; flex-direction: column; flex: 1; }
+
+  /* ===== TOP SCREEN ===== */
+  #topScreen {
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    gap: 40px;
+  }
+
+  #topScreen h1 {
+    font-size: 28px;
+    font-weight: 700;
+    color: #333;
+    letter-spacing: 0.05em;
+  }
+
+  #topScreen p {
+    font-size: 15px;
+    color: #888;
+    text-align: center;
+  }
+
+  /* ===== TOP CARD GRID ===== */
+  .card-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    max-width: 580px;
+  }
+
+  .top-cards-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    justify-content: center;
+  }
+
+  /* 英検5級・ユーザー追加カード */
+  .word-card {
+    background: #fff;
+    border: 2px solid #e0e0e0;
+    border-radius: 16px;
+    padding: 24px 36px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+    min-width: 160px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  .word-card:hover {
+    border-color: #5bc4d4;
+    box-shadow: 0 4px 16px rgba(91,196,212,0.2);
+    transform: translateY(-2px);
+  }
+  .word-card .card-icon { font-size: 36px; margin-bottom: 10px; }
+  .word-card .card-title { font-size: 17px; font-weight: 700; color: #333; margin-bottom: 4px; }
+  .word-card .card-sub { font-size: 13px; color: #aaa; }
+
+  /* ===== ACCORDION GROUPS ===== */
+  .group-section {
+    border: 2px solid #e0e0e0;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+
+  .group-btn {
+    width: 100%;
+    background: #fff;
+    border: none;
+    padding: 18px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.2s;
+  }
+  .group-btn:hover { background: #f5feff; }
+  .group-btn.open { background: #e0f7fa; }
+
+  .group-btn-left { display: flex; align-items: center; gap: 14px; }
+  .group-btn-emoji { font-size: 28px; line-height: 1; }
+  .group-btn-text { text-align: left; }
+  .group-btn-title { font-size: 16px; font-weight: 700; color: #333; }
+  .group-btn-sub { font-size: 12px; color: #aaa; margin-top: 2px; }
+  .group-btn.open .group-btn-title { color: #2a9db0; }
+  .group-btn.open .group-btn-sub { color: #5bc4d4; }
+
+  .group-arrow {
+    font-size: 13px;
+    color: #bbb;
+    transition: transform 0.25s;
+    flex-shrink: 0;
+  }
+  .group-btn.open .group-arrow { transform: rotate(90deg); color: #2a9db0; }
+
+  /* 展開後の小カードエリア */
+  .group-cards {
+    display: none;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 12px 14px;
+    background: #f7fdfe;
+    border-top: 1px solid #d0eef2;
+  }
+  .group-cards.open { display: flex; }
+
+  /* グループ内の小さい単語集カード */
+  .sub-word-card {
+    background: #fff;
+    border: 1.5px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 10px 14px;
+    cursor: pointer;
+    transition: all 0.18s;
+    text-align: center;
+    flex: 1;
+    min-width: 120px;
+    max-width: 180px;
+  }
+  .sub-word-card:hover { border-color: #5bc4d4; background: #f0fafb; transform: translateY(-1px); }
+  .sub-word-card .card-icon { font-size: 20px; margin-bottom: 4px; }
+  .sub-word-card .card-title { font-size: 12px; font-weight: 700; color: #333; line-height: 1.3; }
+  .sub-word-card .card-sub { font-size: 11px; color: #aaa; margin-top: 2px; }
+
+  /* ===== STUDY SCREEN ===== */
+  #studyScreen {
+    flex-direction: column;
+    position: relative;
+    min-height: calc(100vh - 45px);
+  }
+
+  .study-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 60px 40px;
+    gap: 16px;
+  }
+
+  .word-display {
+    display: flex;
+    align-items: flex-start;
+    gap: 24px;
+  }
+
+  .study-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  /* Speaker button */
+  .speaker-btn {
+    background: #5bc4d4;
+    border: none;
+    border-radius: 12px;
+    width: 72px;
+    height: 72px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background 0.2s;
+  }
+  .speaker-btn:hover { background: #40b0c2; }
+  .speaker-btn svg { width: 36px; height: 36px; fill: #fff; }
+
+  .word-info { display: flex; flex-direction: column; gap: 8px; }
+
+  .japanese-text {
+    font-size: 26px;
+    color: #333;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+  }
+
+  .english-hint {
+    font-size: 32px;
+    font-weight: 700;
+    color: #333;
+    letter-spacing: 0.08em;
+    min-height: 42px;
+  }
+
+  .typing-display {
+    font-size: 40px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+  }
+
+  .char-done { color: #333; }
+  .char-cursor {
+    color: #ccc;
+    border-bottom: 3px solid #5bc4d4;
+    animation: blink 0.8s infinite;
+  }
+  .char-cursor-hidden {
+    color: transparent;
+    border-bottom: 3px solid #5bc4d4;
+    animation: blink 0.8s infinite;
+  }
+  .char-pending { color: #ccc; }
+
+  @keyframes blink {
+    0%, 100% { border-color: #5bc4d4; }
+    50% { border-color: transparent; }
+  }
+
+  .feedback-msg {
+    font-size: 18px;
+    font-weight: 700;
+    min-height: 28px;
+    margin-top: 8px;
+  }
+  .feedback-msg.correct { color: #4caf50; }
+  .feedback-msg.incorrect { color: #f44336; }
+
+  /* Progress bar */
+  .progress-bar-wrap {
+    padding: 0 80px 16px;
+  }
+  .progress-bar-bg {
+    background: #f0f0f0;
+    border-radius: 99px;
+    height: 8px;
+    overflow: hidden;
+  }
+  .progress-bar-fill {
+    background: #5bc4d4;
+    height: 100%;
+    border-radius: 99px;
+    transition: width 0.4s;
+  }
+  .progress-label {
+    font-size: 13px;
+    color: #aaa;
+    margin-top: 6px;
+    text-align: right;
+  }
+
+  /* Step badge */
+  .step-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #f5f5f5;
+    border-radius: 99px;
+    padding: 6px 16px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #555;
+    margin-bottom: 20px;
+  }
+  .step-badge .dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: #5bc4d4;
+  }
+
+  /* Next/Complete buttons */
+  .action-btn {
+    background: #5bc4d4;
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    padding: 16px 40px;
+    font-size: 18px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+    margin-top: 24px;
+    display: none;
+  }
+  .action-btn:hover { background: #40b0c2; transform: translateY(-1px); }
+  .action-btn.visible { display: inline-block; }
+
+  /* ===== RESULT SCREEN ===== */
+  #resultScreen {
+    align-items: center;
+    justify-content: flex-start;
+    padding: 40px 60px;
+    gap: 24px;
+    overflow-y: auto;
+  }
+
+  #resultScreen h2 {
+    font-size: 26px;
+    font-weight: 700;
+    color: #333;
+  }
+
+  .result-stats {
+    display: flex;
+    gap: 30px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .stat-box {
+    background: #f8f8f8;
+    border-radius: 12px;
+    padding: 20px 32px;
+    text-align: center;
+  }
+  .stat-box .stat-num { font-size: 40px; font-weight: 700; color: #333; }
+  .stat-box .stat-label { font-size: 14px; color: #aaa; margin-top: 4px; }
+  .stat-box.correct-stat .stat-num { color: #4caf50; }
+  .stat-box.wrong-stat .stat-num { color: #f44336; }
+
+  .review-section { width: 100%; max-width: 600px; }
+  .review-section h3 {
+    font-size: 18px;
+    font-weight: 700;
+    color: #f44336;
+    margin-bottom: 12px;
+  }
+
+  .review-word {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    background: #fff5f5;
+    border: 1px solid #ffcdd2;
+    border-radius: 10px;
+    padding: 14px 20px;
+    margin-bottom: 8px;
+    font-size: 17px;
+  }
+  .review-word .rw-jp { color: #888; }
+  .review-word .rw-en { font-weight: 700; color: #f44336; }
+
+  .btn-group {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 16px;
+  }
+
+  .outline-btn {
+    background: #fff;
+    color: #5bc4d4;
+    border: 2px solid #5bc4d4;
+    border-radius: 12px;
+    padding: 14px 32px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .outline-btn:hover { background: #5bc4d4; color: #fff; }
+
+  /* ===== CHARACTERS ===== */
+  #characters {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    display: flex;
+    align-items: flex-end;
+    gap: 0;
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  .char-triangle {
+    width: 0; height: 0;
+    border-left: 44px solid transparent;
+    border-right: 44px solid transparent;
+    border-bottom: 76px solid #e8724a;
+    position: relative;
+    margin-bottom: 8px;
+    margin-right: -4px;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.12));
+  }
+
+  /* Triangle face */
+  .char-triangle::before {
+    content: '';
+    position: absolute;
+    bottom: -72px;
+    left: -18px;
+    width: 36px;
+    height: 30px;
+    background: #e8724a;
+    border-radius: 0 0 10px 10px;
+  }
+
+  /* SVG characters using inline elements */
+  #charTriangle, #charSquare {
+    width: 90px;
+    height: 100px;
+  }
+
+  /* Flash animation */
+  @keyframes flash-green {
+    0% { background: #fff; }
+    20% { background: #e8f5e9; }
+    100% { background: #fff; }
+  }
+  @keyframes flash-red {
+    0% { background: #fff; }
+    20% { background: #ffebee; }
+    100% { background: #fff; }
+  }
+  .flash-correct { animation: flash-green 0.4s ease; }
+  .flash-red { animation: flash-red 0.3s ease; }
+
+  /* ===== STEP COMPLETE OVERLAY ===== */
+  .overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(255,255,255,0.92);
+    z-index: 100;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+    text-align: center;
+  }
+  .overlay.active { display: flex; }
+  .overlay h2 { font-size: 32px; font-weight: 700; color: #333; }
+  .overlay p { font-size: 16px; color: #888; }
+  .overlay .big-emoji { font-size: 72px; }
+
+  #step1ReviewList {
+    max-height: 28vh;
+    overflow-y: auto;
+    width: 100%;
+    max-width: 480px;
+  }
+
+  /* Shake animation for wrong */
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-8px); }
+    40% { transform: translateX(8px); }
+    60% { transform: translateX(-6px); }
+    80% { transform: translateX(6px); }
+  }
+  .shake { animation: shake 0.3s ease; }
+
+  /* Hint appear */
+  .hint-reveal {
+    font-size: 16px;
+    color: #f44336;
+    font-weight: 700;
+    margin-top: 4px;
+    min-height: 24px;
+    letter-spacing: 0.05em;
+  }
+
+  /* ===== COUNT SCREEN ===== */
+  #countScreen {
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    gap: 32px;
+  }
+  #countScreen h2 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #333;
+  }
+  #countScreen .set-name {
+    font-size: 15px;
+    color: #888;
+    margin-top: -20px;
+  }
+  .count-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    justify-content: center;
+  }
+  .count-card {
+    background: #fff;
+    border: 2px solid #e0e0e0;
+    border-radius: 16px;
+    padding: 24px 40px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+    min-width: 130px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  .count-card:hover {
+    border-color: #5bc4d4;
+    box-shadow: 0 4px 16px rgba(91,196,212,0.2);
+    transform: translateY(-2px);
+  }
+  .count-card .count-num { font-size: 32px; font-weight: 700; color: #333; }
+  .count-card .count-label { font-size: 13px; color: #aaa; margin-top: 4px; }
+  .back-btn {
+    background: none;
+    border: none;
+    color: #aaa;
+    font-size: 14px;
+    cursor: pointer;
+    padding: 8px 16px;
+    text-decoration: underline;
+  }
+  .back-btn:hover { color: #555; }
+
+  /* ===== SPEAK BUTTON (small, reusable) ===== */
+  .speak-sm-btn {
+    background: #5bc4d4;
+    border: none;
+    border-radius: 8px;
+    width: 34px;
+    height: 34px;
+    cursor: pointer;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+  }
+  .speak-sm-btn:hover { background: #40b0c2; }
+  .speak-sm-btn svg { width: 16px; height: 16px; fill: #fff; }
+
+  /* ===== WORD LIST SCREEN ===== */
+  #wordListScreen {
+    align-items: center;
+    padding: 28px 20px 40px;
+    gap: 18px;
+    overflow-y: auto;
+  }
+  #wordListScreen h2 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #333;
+  }
+  .wl-title-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    max-width: 600px;
+  }
+  .wl-title-row h2 { flex: 1; }
+  #wlAdminBtn {
+    background: none;
+    border: none;
+    font-size: 13px;
+    color: #aaa;
+    cursor: pointer;
+    padding: 4px 6px;
+    font-family: inherit;
+    flex-shrink: 0;
+  }
+  #wlAdminBtn.active { color: #5bc4d4; }
+  .word-list-table {
+    width: 100%;
+    max-width: 600px;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .word-list-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 16px;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 16px;
+  }
+  .word-list-row:last-child { border-bottom: none; }
+  .word-list-row .wl-jp { flex: 1; color: #555; }
+  .word-list-row .wl-en {
+    flex: 1; font-weight: 700; color: #333;
+    cursor: pointer;
+    border-bottom: 1.5px solid #d0d0d0;
+    padding-bottom: 1px;
+    letter-spacing: 0.03em;
+    transition: color 0.15s;
+  }
+  .word-list-row .wl-en:hover { color: #5bc4d4; border-bottom-color: #5bc4d4; }
+
+  /* 一括表示切り替えボタン */
+  .wl-bulk-btns {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+    max-width: 600px;
+  }
+  .wl-bulk-btn {
+    flex: 1;
+    background: #e0f7fa;
+    border: 1.5px solid #5bc4d4;
+    border-radius: 10px;
+    color: #2a9db0;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 10px 0;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.15s;
+  }
+  .wl-bulk-btn:hover { background: #b2ebf2; }
+  .wl-del-btn {
+    background: none;
+    border: 1px solid #ffcdd2;
+    border-radius: 8px;
+    color: #f44336;
+    font-size: 13px;
+    padding: 4px 10px;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .wl-del-btn:hover { background: #fff5f5; }
+  .word-add-form {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    width: 100%;
+    max-width: 600px;
+  }
+  .word-add-form input {
+    flex: 1;
+    min-width: 120px;
+    padding: 10px 14px;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    font-size: 16px;
+    outline: none;
+    font-family: inherit;
+  }
+  .word-add-form input:focus { border-color: #5bc4d4; }
+  .word-add-form button {
+    background: #5bc4d4;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 22px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .word-add-form button:hover { background: #40b0c2; }
+
+  /* ===== CREATE SET SCREEN ===== */
+  #createSetScreen {
+    align-items: center;
+    padding: 28px 20px 60px;
+    gap: 20px;
+    overflow-y: auto;
+  }
+  #createSetScreen h2 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #333;
+  }
+  .create-set-form {
+    width: 100%;
+    max-width: 560px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-label { font-size: 13px; font-weight: 700; color: #666; letter-spacing: 0.04em; }
+  .form-input {
+    padding: 12px 16px;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    font-size: 18px;
+    outline: none;
+    font-family: inherit;
+    width: 100%;
+  }
+  .form-input:focus { border-color: #5bc4d4; }
+  .emoji-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .emoji-btn {
+    font-size: 22px;
+    background: #f5f5f5;
+    border: 2px solid transparent;
+    border-radius: 10px;
+    width: 44px;
+    height: 44px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .emoji-btn:hover { background: #e0f7fa; }
+  .emoji-btn.selected { border-color: #5bc4d4; background: #e0f7fa; }
+  .new-word-table {
+    width: 100%;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    overflow: hidden;
+    min-height: 56px;
+  }
+  .save-set-btn {
+    background: #5bc4d4;
+    color: #fff;
+    border: none;
+    border-radius: 14px;
+    padding: 16px;
+    font-size: 18px;
+    font-weight: 700;
+    cursor: pointer;
+    width: 100%;
+    transition: background 0.2s;
+  }
+  .save-set-btn:hover { background: #40b0c2; }
+  .add-set-btn {
+    background: #fff;
+    border: 2px dashed #5bc4d4;
+    border-radius: 16px;
+    padding: 22px 32px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+    min-width: 180px;
+    color: #5bc4d4;
+    font-size: 16px;
+    font-weight: 700;
+  }
+  .add-set-btn:hover { background: #e0f7fa; }
+
+  @media (max-width: 600px) {
+    .study-content { padding: 30px 16px; }
+    .progress-bar-wrap { padding: 0 24px 16px; }
+    .english-hint { font-size: 24px; }
+    .typing-display { font-size: 30px; }
+    #resultScreen { padding: 24px 16px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Title Bar -->
+<div id="titleBar">
+  <button id="backBtn" onclick="handleBackBtn()">← もどる</button>
+  <span id="titleBarText">(株)アイサン🏬 で英語タイピング</span>
+</div>
+
+<!-- ===== TOP SCREEN ===== -->
+<div id="topScreen" class="screen active">
+  <h1>(株)アイサン🏬 で英語タイピング</h1>
+  <p>みなは英検5級、まおはPart1からがんばろう！</p>
+  <div class="card-grid" id="cardGrid"></div>
+  <button class="add-set-btn" onclick="openCreateSet()">＋ 単語集を追加</button>
+</div>
+
+<!-- ===== CREATE SET SCREEN ===== -->
+<div id="createSetScreen" class="screen">
+  <h2>単語集を作成</h2>
+  <div class="create-set-form">
+    <div class="form-group">
+      <div class="form-label">タイトル</div>
+      <input class="form-input" type="text" id="newSetTitle" placeholder="例：英検4級" />
+    </div>
+    <div class="form-group">
+      <div class="form-label">アイコン</div>
+      <div class="emoji-grid" id="emojiGrid"></div>
+    </div>
+    <div class="form-group">
+      <div class="form-label">単語を追加</div>
+      <div class="word-add-form">
+        <input type="text" id="newJpInput" placeholder="日本語（例：犬）" onkeydown="if(event.key==='Enter')document.getElementById('newEnInput').focus()" />
+        <input type="text" id="newEnInput" placeholder="英語（例：dog）" onkeydown="if(event.key==='Enter')addNewWord()" />
+        <button onclick="addNewWord()">追加</button>
+      </div>
+    </div>
+    <div class="new-word-table" id="newWordTable"></div>
+    <button class="save-set-btn" onclick="saveNewSet()">保存する</button>
+  </div>
+  <button class="back-btn" onclick="cancelCreateSet()">← キャンセル</button>
+</div>
+
+<!-- ===== COUNT SCREEN ===== -->
+<div id="countScreen" class="screen">
+  <h2>問題数を選んでください</h2>
+  <div class="set-name" id="countSetName"></div>
+  <div class="count-grid" id="countGrid"></div>
+  <button class="outline-btn" onclick="openWordList()" style="font-size:14px;padding:10px 24px">出題単語一覧</button>
+</div>
+
+<!-- ===== WORD LIST SCREEN ===== -->
+<div id="wordListScreen" class="screen">
+  <div class="wl-title-row">
+    <h2 id="wordListTitle">単語一覧</h2>
+    <button id="wlAdminBtn" onclick="toggleWlAdmin()">🔒 管理</button>
+  </div>
+  <div class="wl-bulk-btns">
+    <button class="wl-bulk-btn" onclick="wlHideAll()">👁 全部かくす</button>
+    <button class="wl-bulk-btn" onclick="wlRevealAll()">👁 全部みせる</button>
+  </div>
+  <div class="word-list-table" id="wordListTable"></div>
+  <div class="word-add-form" id="wlAddForm" style="display:none">
+    <input type="text" id="addJpInput" placeholder="日本語（例：犬）" />
+    <input type="text" id="addEnInput" placeholder="英語（例：dog）" />
+    <button onclick="addWord()">追加</button>
+  </div>
+  <button class="back-btn" onclick="closeWordList()">← 問題数選択に戻る</button>
+</div>
+
+<!-- ===== STUDY SCREEN ===== -->
+<div id="studyScreen" class="screen">
+  <div class="study-content" id="studyContent">
+    <div class="study-inner">
+      <div class="step-badge">
+        <div class="dot"></div>
+        <span id="stepLabel">Step 1：練習モード</span>
+      </div>
+
+      <div class="word-display">
+        <button class="speaker-btn" id="speakerBtn" onclick="speakWord()" title="もう一度聴く">
+          <svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
+        </button>
+        <div class="word-info">
+          <div class="japanese-text" id="japaneseText"></div>
+          <div class="english-hint" id="englishHint"></div>
+          <div class="hint-reveal" id="hintReveal"></div>
+        </div>
+      </div>
+
+      <div class="typing-display" id="typingDisplay"></div>
+      <div class="feedback-msg" id="feedbackMsg"></div>
+      <button class="action-btn" id="actionBtn" onclick="handleAction()"></button>
+    </div>
+  </div>
+
+  <div class="progress-bar-wrap">
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" id="progressFill" style="width:0%"></div>
+    </div>
+    <div class="progress-label" id="progressLabel">0 / 0</div>
+  </div>
+</div>
+
+<!-- ===== RESULT SCREEN ===== -->
+<div id="resultScreen" class="screen">
+  <h2 id="resultTitle"></h2>
+  <div class="result-stats" id="resultStats"></div>
+  <div class="review-section" id="reviewSection"></div>
+  <div class="btn-group" id="resultBtns"></div>
+</div>
+
+<!-- ===== STEP COMPLETE OVERLAY ===== -->
+<div class="overlay" id="step1CompleteOverlay">
+  <div class="big-emoji">🎉</div>
+  <h2>Step 1 完了！</h2>
+  <div id="step1ReviewList"></div>
+  <button class="action-btn visible" style="margin-top:0" onclick="startStep2()">Step 2 へ進む →</button>
+  <button class="outline-btn" onclick="closeOverlay()">もう一度 Step 1 を練習する</button>
+  <button class="outline-btn" id="step1ReviewBtn" onclick="reviewWrongFromStep1()" style="display:none">間違えた単語を復習する</button>
+  <button class="outline-btn" onclick="goTop()">単語集を選ぶ</button>
+</div>
+
+<!-- ===== CHARACTERS (always visible) ===== -->
+<div id="characters">
+  <!-- Triangle character -->
+  <svg id="charTriangle" viewBox="0 0 90 100" xmlns="http://www.w3.org/2000/svg">
+    <!-- Flag arm -->
+    <line x1="72" y1="28" x2="72" y2="12" stroke="#555" stroke-width="2.5" stroke-linecap="round"/>
+    <rect x="72" y="12" width="14" height="10" fill="#f5c842" rx="2"/>
+    <!-- Body -->
+    <polygon points="45,8 88,90 2,90" fill="#e8724a"/>
+    <!-- Eyes -->
+    <circle cx="35" cy="65" r="5" fill="#fff"/>
+    <circle cx="55" cy="65" r="5" fill="#fff"/>
+    <circle cx="36" cy="66" r="3" fill="#333"/>
+    <circle cx="56" cy="66" r="3" fill="#333"/>
+    <!-- Blush -->
+    <ellipse cx="28" cy="73" rx="5" ry="3" fill="#f0a070" opacity="0.6"/>
+    <ellipse cx="62" cy="73" rx="5" ry="3" fill="#f0a070" opacity="0.6"/>
+    <!-- Mouth smile -->
+    <path d="M38 77 Q45 83 52 77" stroke="#333" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <!-- Legs -->
+    <line x1="35" y1="90" x2="30" y2="100" stroke="#e8724a" stroke-width="5" stroke-linecap="round"/>
+    <line x1="55" y1="90" x2="60" y2="100" stroke="#e8724a" stroke-width="5" stroke-linecap="round"/>
+    <!-- Feet -->
+    <ellipse cx="28" cy="100" rx="7" ry="3" fill="#c05828"/>
+    <ellipse cx="62" cy="100" rx="7" ry="3" fill="#c05828"/>
+  </svg>
+
+  <!-- Square character -->
+  <svg id="charSquare" viewBox="0 0 90 100" xmlns="http://www.w3.org/2000/svg">
+    <!-- Body -->
+    <rect x="10" y="20" width="70" height="68" rx="14" fill="#5bc4d4"/>
+    <!-- Eyes -->
+    <circle cx="33" cy="50" r="6" fill="#fff"/>
+    <circle cx="57" cy="50" r="6" fill="#fff"/>
+    <circle cx="34" cy="51" r="3.5" fill="#333"/>
+    <circle cx="58" cy="51" r="3.5" fill="#333"/>
+    <!-- Eyebrows (neutral/cool) -->
+    <line x1="27" y1="42" x2="39" y2="43" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="51" y1="43" x2="63" y2="42" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>
+    <!-- Blush -->
+    <ellipse cx="24" cy="62" rx="6" ry="3.5" fill="#80d8e8" opacity="0.6"/>
+    <ellipse cx="66" cy="62" rx="6" ry="3.5" fill="#80d8e8" opacity="0.6"/>
+    <!-- Mouth neutral -->
+    <line x1="37" y1="66" x2="53" y2="66" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>
+    <!-- Ears/side nubs -->
+    <rect x="2" y="38" width="10" height="16" rx="5" fill="#5bc4d4"/>
+    <rect x="78" y="38" width="10" height="16" rx="5" fill="#5bc4d4"/>
+    <!-- Legs -->
+    <line x1="32" y1="88" x2="28" y2="100" stroke="#5bc4d4" stroke-width="6" stroke-linecap="round"/>
+    <line x1="58" y1="88" x2="62" y2="100" stroke="#5bc4d4" stroke-width="6" stroke-linecap="round"/>
+    <!-- Feet -->
+    <ellipse cx="26" cy="100" rx="8" ry="3" fill="#3aa8ba"/>
+    <ellipse cx="64" cy="100" rx="8" ry="3" fill="#3aa8ba"/>
+  </svg>
+</div>
+
+<script>
+// ===== WORD DATA =====
+const wordSets = [
+  {
+    id: 'eiken5',
+    title: '英検5級',
+    icon: '⭐',
+    sub: '75単語',
+    words: [
+      { japanese: '買う', english: 'buy' },
+      { japanese: '来る', english: 'come' },
+      { japanese: 'する', english: 'do' },
+      { japanese: '飲む', english: 'drink' },
+      { japanese: '食べる', english: 'eat' },
+      { japanese: '得る', english: 'get' },
+      { japanese: '行く', english: 'go' },
+      { japanese: '持っている・食べる・飼う', english: 'have' },
+      { japanese: '知っている', english: 'know' },
+      { japanese: '作る', english: 'make' },
+      { japanese: '読む', english: 'read' },
+      { japanese: '走る', english: 'run' },
+      { japanese: '歌う', english: 'sing' },
+      { japanese: '座る', english: 'sit' },
+      { japanese: '話す', english: 'speak' },
+      { japanese: '泳ぐ', english: 'swim' },
+      { japanese: '（写真を）とる', english: 'take' },
+      { japanese: '教える', english: 'teach' },
+      { japanese: '思う', english: 'think' },
+      { japanese: '書く', english: 'write' },
+      { japanese: '家族', english: 'family' },
+      { japanese: '父親', english: 'father' },
+      { japanese: '母親', english: 'mother' },
+      { japanese: '兄・弟', english: 'brother' },
+      { japanese: '姉・妹', english: 'sister' },
+      { japanese: '季節', english: 'season' },
+      { japanese: '春', english: 'spring' },
+      { japanese: '夏', english: 'summer' },
+      { japanese: '秋', english: 'fall' },
+      { japanese: '冬', english: 'winter' },
+      { japanese: '年・1年', english: 'year' },
+      { japanese: '月・1か月', english: 'month' },
+      { japanese: '週・1週間', english: 'week' },
+      { japanese: '日・1日', english: 'day' },
+      { japanese: '1時間', english: 'hour' },
+      { japanese: '時間・時刻', english: 'time' },
+      { japanese: '週末', english: 'weekend' },
+      { japanese: '月曜日', english: 'Monday' },
+      { japanese: '火曜日', english: 'Tuesday' },
+      { japanese: '水曜日', english: 'Wednesday' },
+      { japanese: '木曜日', english: 'Thursday' },
+      { japanese: '金曜日', english: 'Friday' },
+      { japanese: '土曜日', english: 'Saturday' },
+      { japanese: '日曜日', english: 'Sunday' },
+      { japanese: '1月', english: 'January' },
+      { japanese: '2月', english: 'February' },
+      { japanese: '3月', english: 'March' },
+      { japanese: '4月', english: 'April' },
+      { japanese: '5月', english: 'May' },
+      { japanese: '6月', english: 'June' },
+      { japanese: '7月', english: 'July' },
+      { japanese: '8月', english: 'August' },
+      { japanese: '9月', english: 'September' },
+      { japanese: '10月', english: 'October' },
+      { japanese: '11月', english: 'November' },
+      { japanese: '12月', english: 'December' },
+      { japanese: '古い・年をとった', english: 'old' },
+      { japanese: '新しい', english: 'new' },
+      { japanese: '若い', english: 'young' },
+      { japanese: '大きい', english: 'large' },
+      { japanese: '小さい', english: 'small' },
+      { japanese: 'よい', english: 'good' },
+      { japanese: '悪い', english: 'bad' },
+      { japanese: 'すべての', english: 'all' },
+      { japanese: '高い', english: 'high' },
+      { japanese: '晴れた', english: 'sunny' },
+      { japanese: '多くの（数）', english: 'many' },
+      { japanese: 'いつ', english: 'when' },
+      { japanese: 'どこに・で', english: 'where' },
+      { japanese: 'だれ', english: 'who' },
+      { japanese: '何・何の', english: 'what' },
+      { japanese: 'なぜ', english: 'why' },
+      { japanese: 'だれの', english: 'whose' },
+      { japanese: 'どうやって・どれくらい', english: 'how' },
+      { japanese: 'どちら（の）・どの・どれ', english: 'which' },
+    ]
+  },
+
+  // ===== 英検5級サブセット =====
+  { id:'eiken5_verb', title:'動詞・うごきの言葉', icon:'🏃', sub:'20単語', words:[
+    {japanese:'買う', english:'buy'},
+    {japanese:'来る', english:'come'},
+    {japanese:'する', english:'do'},
+    {japanese:'飲む', english:'drink'},
+    {japanese:'食べる', english:'eat'},
+    {japanese:'得る', english:'get'},
+    {japanese:'行く', english:'go'},
+    {japanese:'持っている・飼う', english:'have'},
+    {japanese:'知っている', english:'know'},
+    {japanese:'作る', english:'make'},
+    {japanese:'読む', english:'read'},
+    {japanese:'走る', english:'run'},
+    {japanese:'歌う', english:'sing'},
+    {japanese:'座る', english:'sit'},
+    {japanese:'話す', english:'speak'},
+    {japanese:'泳ぐ', english:'swim'},
+    {japanese:'（写真を）とる', english:'take'},
+    {japanese:'教える', english:'teach'},
+    {japanese:'思う', english:'think'},
+    {japanese:'書く', english:'write'},
+  ]},
+  { id:'eiken5_family', title:'名詞・家族', icon:'👨‍👩‍👧', sub:'5単語', words:[
+    {japanese:'家族', english:'family'},
+    {japanese:'父親', english:'father'},
+    {japanese:'母親', english:'mother'},
+    {japanese:'兄・弟', english:'brother'},
+    {japanese:'姉・妹', english:'sister'},
+  ]},
+  { id:'eiken5_season', title:'名詞・季節', icon:'🌸', sub:'5単語', words:[
+    {japanese:'季節', english:'season'},
+    {japanese:'春', english:'spring'},
+    {japanese:'夏', english:'summer'},
+    {japanese:'秋', english:'fall'},
+    {japanese:'冬', english:'winter'},
+  ]},
+  { id:'eiken5_time', title:'名詞・時・時間', icon:'⏰', sub:'7単語', words:[
+    {japanese:'年・1年', english:'year'},
+    {japanese:'月・1か月', english:'month'},
+    {japanese:'週・1週間', english:'week'},
+    {japanese:'日・1日', english:'day'},
+    {japanese:'1時間', english:'hour'},
+    {japanese:'時間・時刻', english:'time'},
+    {japanese:'週末', english:'weekend'},
+  ]},
+  { id:'eiken5_week', title:'名詞・曜日', icon:'📅', sub:'7単語', words:[
+    {japanese:'月曜日', english:'Monday'},
+    {japanese:'火曜日', english:'Tuesday'},
+    {japanese:'水曜日', english:'Wednesday'},
+    {japanese:'木曜日', english:'Thursday'},
+    {japanese:'金曜日', english:'Friday'},
+    {japanese:'土曜日', english:'Saturday'},
+    {japanese:'日曜日', english:'Sunday'},
+  ]},
+  { id:'eiken5_month', title:'名詞・月', icon:'🗓️', sub:'12単語', words:[
+    {japanese:'1月', english:'January'},
+    {japanese:'2月', english:'February'},
+    {japanese:'3月', english:'March'},
+    {japanese:'4月', english:'April'},
+    {japanese:'5月', english:'May'},
+    {japanese:'6月', english:'June'},
+    {japanese:'7月', english:'July'},
+    {japanese:'8月', english:'August'},
+    {japanese:'9月', english:'September'},
+    {japanese:'10月', english:'October'},
+    {japanese:'11月', english:'November'},
+    {japanese:'12月', english:'December'},
+  ]},
+  { id:'eiken5_adj', title:'形容詞・ようすの言葉', icon:'🌟', sub:'11単語', words:[
+    {japanese:'古い・年をとった', english:'old'},
+    {japanese:'新しい', english:'new'},
+    {japanese:'若い', english:'young'},
+    {japanese:'大きい', english:'large'},
+    {japanese:'小さい', english:'small'},
+    {japanese:'よい', english:'good'},
+    {japanese:'悪い', english:'bad'},
+    {japanese:'すべての', english:'all'},
+    {japanese:'高い', english:'high'},
+    {japanese:'晴れた', english:'sunny'},
+    {japanese:'多くの（数）', english:'many'},
+  ]},
+  { id:'eiken5_question', title:'疑問詞・質問の言葉', icon:'❓', sub:'8単語', words:[
+    {japanese:'いつ', english:'when'},
+    {japanese:'どこに・で', english:'where'},
+    {japanese:'だれ', english:'who'},
+    {japanese:'何・何の', english:'what'},
+    {japanese:'なぜ', english:'why'},
+    {japanese:'だれの', english:'whose'},
+    {japanese:'どうやって・どれくらい', english:'how'},
+    {japanese:'どちら（の）・どの・どれ', english:'which'},
+  ]},
+
+  // ===== Part-1「英語のキホン」=====
+  { id:'p1_1', title:'P1-①好きなスポーツ', icon:'⚽', sub:'10単語', words:[
+    {japanese:'私は・私が', english:'I'},
+    {japanese:'あなたは・あなたたちは', english:'you'},
+    {japanese:'好き', english:'like'},
+    {japanese:'サッカー', english:'soccer'},
+    {japanese:'野球', english:'baseball'},
+    {japanese:'テニス', english:'tennis'},
+    {japanese:'テーブル・食卓', english:'table'},
+    {japanese:'バスケットボール', english:'basketball'},
+    {japanese:'バレーボール', english:'volleyball'},
+    {japanese:'ラグビー', english:'rugby'},
+  ]},
+  { id:'p1_2', title:'P1-②好きなおやつ', icon:'🍎', sub:'10単語', words:[
+    {japanese:'リンゴ', english:'apple'},
+    {japanese:'パイ', english:'pie'},
+    {japanese:'氷', english:'ice'},
+    {japanese:'クリーム', english:'cream'},
+    {japanese:'ケーキ', english:'cake'},
+    {japanese:'チョコレート', english:'chocolate'},
+    {japanese:'チーズ', english:'cheese'},
+    {japanese:'クッキー', english:'cookie'},
+    {japanese:'ピザ', english:'pizza'},
+    {japanese:'キャンディー', english:'candy'},
+  ]},
+  { id:'p1_3', title:'P1-③好きな教科', icon:'📖', sub:'10単語', words:[
+    {japanese:'〜をする', english:'do'},
+    {japanese:'〜でない', english:'not'},
+    {japanese:'国語・日本語・日本人', english:'Japanese'},
+    {japanese:'数学', english:'math'},
+    {japanese:'理科・科学', english:'science'},
+    {japanese:'社会の', english:'social'},
+    {japanese:'studyの複数形', english:'studies'},
+    {japanese:'英語', english:'English'},
+    {japanese:'音楽', english:'music'},
+    {japanese:'体育', english:'P.E.'},
+  ]},
+  { id:'p1_4', title:'P1-④好きなこと', icon:'🎵', sub:'10単語', words:[
+    {japanese:'はい・そうです', english:'yes'},
+    {japanese:'いいえ', english:'no'},
+    {japanese:'登山', english:'climbing'},
+    {japanese:'歌うこと・声楽', english:'singing'},
+    {japanese:'走ること・ランニング', english:'running'},
+    {japanese:'ダンス・踊り', english:'dancing'},
+    {japanese:'読書・読むこと', english:'reading'},
+    {japanese:'絵を描くこと', english:'drawing'},
+    {japanese:'水泳・泳ぐこと', english:'swimming'},
+    {japanese:'買物をすること', english:'shopping'},
+  ]},
+  { id:'p1_5', title:'P1-⑤欲しいもの①趣味', icon:'🎸', sub:'10単語', words:[
+    {japanese:'〜が欲しい', english:'want'},
+    {japanese:'1人・1つ・1匹', english:'a'},
+    {japanese:'新しい・新入りの', english:'new'},
+    {japanese:'カメラ', english:'camera'},
+    {japanese:'コンピュータ', english:'computer'},
+    {japanese:'ギター', english:'guitar'},
+    {japanese:'腕時計', english:'watch'},
+    {japanese:'ピアノ', english:'piano'},
+    {japanese:'スマートフォン', english:'smartphone'},
+    {japanese:'タブレットパソコン', english:'tablet'},
+  ]},
+  { id:'p1_6', title:'P1-⑥欲しいもの②ファッション', icon:'👗', sub:'10単語', words:[
+    {japanese:'靴', english:'shoes'},
+    {japanese:'縁のある帽子', english:'hat'},
+    {japanese:'つば付き帽子', english:'cap'},
+    {japanese:'服・衣服', english:'clothes'},
+    {japanese:'シャツ', english:'shirt'},
+    {japanese:'コート・上着', english:'coat'},
+    {japanese:'指輪', english:'ring'},
+    {japanese:'ドレス', english:'dress'},
+    {japanese:'セーター', english:'sweater'},
+    {japanese:'ジャケット・上着', english:'jacket'},
+  ]},
+  { id:'p1_7', title:'P1-⑦欲しいもの③家具', icon:'🛋️', sub:'10単語', words:[
+    {japanese:'光・明かり・照明', english:'light'},
+    {japanese:'ベッド', english:'bed'},
+    {japanese:'いす', english:'chair'},
+    {japanese:'バッグ・かばん', english:'bag'},
+    {japanese:'ボール・球', english:'ball'},
+    {japanese:'机', english:'desk'},
+    {japanese:'かさ', english:'umbrella'},
+    {japanese:'置き・掛け時計', english:'clock'},
+    {japanese:'ラケット', english:'racket'},
+    {japanese:'ソファー', english:'sofa'},
+  ]},
+  { id:'p1_8', title:'P1-⑧欲しいもの④動物', icon:'🐕', sub:'10単語', words:[
+    {japanese:'何・何の', english:'what'},
+    {japanese:'ネコ', english:'cat'},
+    {japanese:'イヌ', english:'dog'},
+    {japanese:'鳥', english:'bird'},
+    {japanese:'馬', english:'horse'},
+    {japanese:'horseの複数形', english:'horses'},
+    {japanese:'サル', english:'monkey'},
+    {japanese:'monkeyの複数形', english:'monkeys'},
+    {japanese:'2・2人・2つ', english:'two'},
+    {japanese:'3・3人・3つ', english:'three'},
+  ]},
+  { id:'p1_9', title:'P1-⑨好きな果物・野菜', icon:'🍇', sub:'10単語', words:[
+    {japanese:'果物・果実', english:'fruit'},
+    {japanese:'野菜', english:'vegetable'},
+    {japanese:'オレンジ・オレンジ色', english:'orange'},
+    {japanese:'ブドウ', english:'grape'},
+    {japanese:'サクランボ', english:'cherry'},
+    {japanese:'cherryの複数形', english:'cherries'},
+    {japanese:'トマト', english:'tomato'},
+    {japanese:'tomatoの複数形', english:'tomatoes'},
+    {japanese:'ジャガイモ', english:'potato'},
+    {japanese:'potatoの複数形', english:'potatoes'},
+  ]},
+
+  // ===== Part-2「日常生活」=====
+  { id:'p2_1', title:'P2-①教育施設', icon:'🏫', sub:'10単語', words:[
+    {japanese:'行く・向かう', english:'go'},
+    {japanese:'〜へ・〜に', english:'to'},
+    {japanese:'その', english:'the'},
+    {japanese:'学校・授業', english:'school'},
+    {japanese:'初歩の・初級の', english:'elementary'},
+    {japanese:'下位の・下級の', english:'junior'},
+    {japanese:'高い', english:'high'},
+    {japanese:'大学', english:'college'},
+    {japanese:'図書館・図書室', english:'library'},
+    {japanese:'博物館・美術館', english:'museum'},
+  ]},
+  { id:'p2_2', title:'P2-②公共施設', icon:'🏛️', sub:'10単語', words:[
+    {japanese:'建物・ビル', english:'building'},
+    {japanese:'駅・〜所', english:'station'},
+    {japanese:'警察', english:'police'},
+    {japanese:'火・火事', english:'fire'},
+    {japanese:'都市・都会・市', english:'city'},
+    {japanese:'ホール・会館・玄関', english:'hall'},
+    {japanese:'動物園', english:'zoo'},
+    {japanese:'病院', english:'hospital'},
+    {japanese:'郵便局', english:'post office'},
+    {japanese:'空港・飛行場', english:'airport'},
+  ]},
+  { id:'p2_3', title:'P2-③買い物①', icon:'🛍️', sub:'10単語', words:[
+    {japanese:'レストラン', english:'restaurant'},
+    {japanese:'特定の商品を売る店', english:'shop'},
+    {japanese:'花・草花', english:'flower'},
+    {japanese:'ペット', english:'pet'},
+    {japanese:'銀行', english:'bank'},
+    {japanese:'さまざまな商品を売る店', english:'store'},
+    {japanese:'本', english:'book'},
+    {japanese:'ホテル・旅館', english:'hotel'},
+    {japanese:'スーパーマーケット', english:'supermarket'},
+    {japanese:'スポーツジム・体育館', english:'gym'},
+  ]},
+  { id:'p2_4', title:'P2-④買い物②', icon:'🎡', sub:'10単語', words:[
+    {japanese:'どこで・どこに・どこへ', english:'where'},
+    {japanese:'公園', english:'park'},
+    {japanese:'楽しさ・おもしろさ', english:'amusement'},
+    {japanese:'映画', english:'movie'},
+    {japanese:'劇場', english:'theater'},
+    {japanese:'寺', english:'temple'},
+    {japanese:'神社', english:'shrine'},
+    {japanese:'城', english:'castle'},
+    {japanese:'スタジアム・競技場', english:'stadium'},
+    {japanese:'工場', english:'factory'},
+  ]},
+  { id:'p2_5', title:'P2-⑤夜にすること', icon:'🌙', sub:'10単語', words:[
+    {japanese:'〜の中で・〜の中に', english:'in'},
+    {japanese:'夜・夕暮れ・夕方', english:'evening'},
+    {japanese:'〜を見る', english:'watch'},
+    {japanese:'テレビ', english:'TV'},
+    {japanese:'〜を勉強する', english:'study'},
+    {japanese:'遊ぶ・演奏する', english:'play'},
+    {japanese:'〜を料理する', english:'cook'},
+    {japanese:'夕食・ディナー', english:'dinner'},
+    {japanese:'〜を聞く', english:'listen to'},
+    {japanese:'音楽', english:'music'},
+  ]},
+  { id:'p2_6', title:'P2-⑥朝にすること', icon:'🌅', sub:'10単語', words:[
+    {japanese:'朝・午前', english:'morning'},
+    {japanese:'〜を持っている・食べる', english:'have'},
+    {japanese:'朝食', english:'breakfast'},
+    {japanese:'〜を取る・持って行く', english:'take'},
+    {japanese:'入浴・浴槽', english:'bath'},
+    {japanese:'歩く・散歩', english:'walk'},
+    {japanese:'〜を洗う', english:'wash'},
+    {japanese:'私の', english:'my'},
+    {japanese:'顔', english:'face'},
+    {japanese:'皿・料理', english:'dishes'},
+  ]},
+  { id:'p2_7', title:'P2-⑦朝ごはん', icon:'🍳', sub:'10単語', words:[
+    {japanese:'あらゆる・毎〜', english:'every'},
+    {japanese:'〜を食べる', english:'eat'},
+    {japanese:'パン', english:'bread'},
+    {japanese:'米・ごはん', english:'rice'},
+    {japanese:'魚・魚類', english:'fish'},
+    {japanese:'サラダ', english:'salad'},
+    {japanese:'卵', english:'egg'},
+    {japanese:'〜を飲む', english:'drink'},
+    {japanese:'牛乳・ミルク', english:'milk'},
+    {japanese:'水', english:'water'},
+  ]},
+  { id:'p2_8', title:'P2-⑧曜日', icon:'📅', sub:'10単語', words:[
+    {japanese:'いつ・〜する時に', english:'when'},
+    {japanese:'それを・それは', english:'it'},
+    {japanese:'〜の上に・〜にくっついて', english:'on'},
+    {japanese:'日曜日', english:'Sunday'},
+    {japanese:'月曜日', english:'Monday'},
+    {japanese:'火曜日', english:'Tuesday'},
+    {japanese:'水曜日', english:'Wednesday'},
+    {japanese:'木曜日', english:'Thursday'},
+    {japanese:'金曜日', english:'Friday'},
+    {japanese:'土曜日', english:'Saturday'},
+  ]},
+  { id:'p2_9', title:'P2-⑨朝の準備', icon:'🪥', sub:'10単語', words:[
+    {japanese:'起きる・起床する', english:'get up'},
+    {japanese:'ブラシをかける・磨く', english:'brush'},
+    {japanese:'歯', english:'teeth'},
+    {japanese:'髪の毛', english:'hair'},
+    {japanese:'〜に・〜で', english:'at'},
+    {japanese:'4', english:'four'},
+    {japanese:'5', english:'five'},
+    {japanese:'6', english:'six'},
+    {japanese:'7', english:'seven'},
+    {japanese:'8', english:'eight'},
+  ]},
+  { id:'p2_10', title:'P2-⑩学校へ行こう', icon:'🎒', sub:'10単語', words:[
+    {japanese:'〜を去る・出発する', english:'leave'},
+    {japanese:'家・故郷', english:'home'},
+    {japanese:'手に入れる・得る', english:'get'},
+    {japanese:'バス', english:'bus'},
+    {japanese:'電車・列車', english:'train'},
+    {japanese:'〜に会う・出会う', english:'meet'},
+    {japanese:'友だち・友人', english:'friend'},
+    {japanese:'〜といっしょに', english:'with'},
+    {japanese:'〜を練習する', english:'practice'},
+    {japanese:'9', english:'nine'},
+  ]},
+  { id:'p2_11', title:'P2-⑪学校生活①時刻', icon:'🕐', sub:'10単語', words:[
+    {japanese:'時・時間・時刻', english:'time'},
+    {japanese:'私たちは', english:'we'},
+    {japanese:'〜を読む・読書する', english:'read'},
+    {japanese:'使う・利用する', english:'use'},
+    {japanese:'始める・出発する', english:'start'},
+    {japanese:'授業・クラス・組', english:'class'},
+    {japanese:'昼食・ランチ', english:'lunch'},
+    {japanese:'10', english:'ten'},
+    {japanese:'11', english:'eleven'},
+    {japanese:'正午・真昼', english:'noon'},
+  ]},
+  { id:'p2_12', title:'P2-⑫学校生活②頻度', icon:'📊', sub:'10単語', words:[
+    {japanese:'いつも・常に', english:'always'},
+    {japanese:'たいてい・ふつうは', english:'usually'},
+    {japanese:'よく・しばしば', english:'often'},
+    {japanese:'時々・時には', english:'sometimes'},
+    {japanese:'〜を掃除する・きれいな', english:'clean'},
+    {japanese:'私たちの', english:'our'},
+    {japanese:'教室', english:'classroom'},
+    {japanese:'〜のあとに', english:'after'},
+    {japanese:'描く', english:'draw'},
+    {japanese:'絵・写真', english:'picture'},
+  ]},
+  { id:'p2_13', title:'P2-⑬学校生活③様子', icon:'🏃', sub:'10単語', words:[
+    {japanese:'とても・非常に・本当に', english:'very'},
+    {japanese:'一生懸命に・難しい', english:'hard'},
+    {japanese:'速く・すばやい', english:'fast'},
+    {japanese:'ゆっくり', english:'slowly'},
+    {japanese:'上手に・よく・十分に', english:'well'},
+    {japanese:'早く・早い', english:'early'},
+    {japanese:'遅く・遅い・遅刻', english:'late'},
+    {japanese:'走る', english:'run'},
+    {japanese:'話す・しゃべる', english:'speak'},
+    {japanese:'〜を知っている・理解している', english:'know'},
+  ]},
+
+  // ===== Part-3「身のまわりの人・もの」=====
+  { id:'p3_1', title:'P3-①自己紹介', icon:'👋', sub:'10単語', words:[
+    {japanese:'〜です・ある・いる（主語がI）', english:'am'},
+    {japanese:'〜です・ある・いる（主語がyou・複数）', english:'are'},
+    {japanese:'I amの短縮形', english:"I'm"},
+    {japanese:"you areの短縮形", english:"you're"},
+    {japanese:"we areの短縮形", english:"we're"},
+    {japanese:'（男性）〜さん・先生', english:'Mr.'},
+    {japanese:'（女性）〜さん・先生', english:'Ms.'},
+    {japanese:'生徒・学生', english:'student'},
+    {japanese:'先生・教師', english:'teacher'},
+    {japanese:'ファン', english:'fan'},
+  ]},
+  { id:'p3_2', title:'P3-②出身地', icon:'🌍', sub:'10単語', words:[
+    {japanese:'男の子・少年', english:'boy'},
+    {japanese:'女の子・少女', english:'girl'},
+    {japanese:'彼らは・彼女らは・それらは', english:'they'},
+    {japanese:"they areの短縮形", english:"they're"},
+    {japanese:"are notの短縮形", english:"aren't"},
+    {japanese:'〜から・〜出身の', english:'from'},
+    {japanese:'日本', english:'Japan'},
+    {japanese:'インド', english:'India'},
+    {japanese:'アメリカ', english:'America'},
+    {japanese:'中国', english:'China'},
+  ]},
+  { id:'p3_3', title:'P3-③体調', icon:'😊', sub:'10単語', words:[
+    {japanese:'元気な・晴れた', english:'fine'},
+    {japanese:'病気の・体調が悪い', english:'sick'},
+    {japanese:'幸せな・うれしい', english:'happy'},
+    {japanese:'悲しい・悲しそうな', english:'sad'},
+    {japanese:'忙しい・にぎやかな', english:'busy'},
+    {japanese:'おなかのすいた・空腹の', english:'hungry'},
+    {japanese:'眠い・眠そうな', english:'sleepy'},
+    {japanese:'怒った・腹を立てた', english:'angry'},
+    {japanese:'疲れた・うんざりしている', english:'tired'},
+    {japanese:'わくわくした', english:'excited'},
+  ]},
+  { id:'p3_4', title:'P3-④家の中にあるもの', icon:'🏠', sub:'10単語', words:[
+    {japanese:'これ・こちらは・ここ', english:'this'},
+    {japanese:'あれ・あちらは・あの', english:'that'},
+    {japanese:'あなたの・あなたたちの', english:'your'},
+    {japanese:'かぎ・キー・手がかり', english:'key'},
+    {japanese:'部屋・空間・場所', english:'room'},
+    {japanese:'庭', english:'garden'},
+    {japanese:'台所・キッチン', english:'kitchen'},
+    {japanese:'カップ', english:'cup'},
+    {japanese:'コップ・グラス', english:'glass'},
+    {japanese:'金・財産', english:'money'},
+  ]},
+  { id:'p3_5', title:'P3-⑤色と様子', icon:'🌈', sub:'10単語', words:[
+    {japanese:'白い・白色の', english:'white'},
+    {japanese:'黒い・黒色の', english:'black'},
+    {japanese:'赤い・赤色の', english:'red'},
+    {japanese:'青い・青色の', english:'blue'},
+    {japanese:'黄色い・黄色の', english:'yellow'},
+    {japanese:'緑の・緑色の', english:'green'},
+    {japanese:'ピンク色の・もも色の', english:'pink'},
+    {japanese:'古い・〜歳の・年上の', english:'old'},
+    {japanese:'大きい・重要な・成長した', english:'big'},
+    {japanese:'小さい・少ない・幼い', english:'small'},
+  ]},
+  { id:'p3_6', title:'P3-⑥家族・親戚', icon:'👨‍👩‍👧', sub:'10単語', words:[
+    {japanese:'父・お父さん', english:'father'},
+    {japanese:'母・お母さん', english:'mother'},
+    {japanese:'兄弟・兄・弟', english:'brother'},
+    {japanese:'姉妹・姉・妹', english:'sister'},
+    {japanese:'祖父・おじいちゃん', english:'grandfather'},
+    {japanese:'祖母・おばあちゃん', english:'grandmother'},
+    {japanese:'おじ', english:'uncle'},
+    {japanese:'おば', english:'aunt'},
+    {japanese:'彼は・彼が', english:'he'},
+    {japanese:'彼女は・彼女が', english:'she'},
+  ]},
+  { id:'p3_7', title:'P3-⑦学校にあるもの', icon:'✏️', sub:'10単語', words:[
+    {japanese:'彼の・彼のもの', english:'his'},
+    {japanese:'彼女の・彼女を・彼女に', english:'her'},
+    {japanese:'ペン', english:'pen'},
+    {japanese:'鉛筆', english:'pencil'},
+    {japanese:'ノート・メモ帳', english:'notebook'},
+    {japanese:'辞書・辞典', english:'dictionary'},
+    {japanese:'ドア・扉', english:'door'},
+    {japanese:'窓', english:'window'},
+    {japanese:'教科書・テキスト', english:'textbook'},
+    {japanese:'消しゴム', english:'eraser'},
+  ]},
+  { id:'p3_8', title:'P3-⑧職業', icon:'👨‍⚕️', sub:'10単語', words:[
+    {japanese:"he isの短縮形", english:"he's"},
+    {japanese:"she isの短縮形", english:"she's"},
+    {japanese:'医者・医師', english:'doctor'},
+    {japanese:'看護師', english:'nurse'},
+    {japanese:'歌手', english:'singer'},
+    {japanese:'俳優', english:'actor'},
+    {japanese:'料理人・シェフ', english:'chef'},
+    {japanese:'音楽家・ミュージシャン', english:'musician'},
+    {japanese:'作家・著者', english:'writer'},
+    {japanese:'芸術家・画家', english:'artist'},
+  ]},
+  { id:'p3_9', title:'P3-⑨特徴・性格', icon:'💪', sub:'10単語', words:[
+    {japanese:'短い・背の低い', english:'short'},
+    {japanese:'高い・背の高い', english:'tall'},
+    {japanese:'若い・幼い・年下の', english:'young'},
+    {japanese:'かわいい', english:'cute'},
+    {japanese:'強い・頑丈な', english:'strong'},
+    {japanese:'お金持ちの・裕福な', english:'rich'},
+    {japanese:'優しい・親切な', english:'kind'},
+    {japanese:'静かな・おとなしい', english:'quiet'},
+    {japanese:'元気な・積極的な', english:'active'},
+    {japanese:'涼しい・かっこいい', english:'cool'},
+  ]},
+  { id:'p3_10', title:'P3-⑩年齢', icon:'🎂', sub:'10単語', words:[
+    {japanese:'1年・〜歳・年齢', english:'year'},
+    {japanese:'12', english:'twelve'},
+    {japanese:'13', english:'thirteen'},
+    {japanese:'14', english:'fourteen'},
+    {japanese:'15', english:'fifteen'},
+    {japanese:'16', english:'sixteen'},
+    {japanese:'17', english:'seventeen'},
+    {japanese:'18', english:'eighteen'},
+    {japanese:'19', english:'nineteen'},
+    {japanese:'20', english:'twenty'},
+  ]},
+
+  // ===== Part-4「その他の重要単語」=====
+  { id:'p4_1', title:'P4-①一般動詞①', icon:'🏃', sub:'10単語', words:[
+    {japanese:'待つ', english:'wait'},
+    {japanese:'切る・切れる', english:'cut'},
+    {japanese:'働く・勉強する', english:'work'},
+    {japanese:'着ている', english:'wear'},
+    {japanese:'話す・話し合う', english:'talk'},
+    {japanese:'〜が見える・会う', english:'see'},
+    {japanese:'〜を買う', english:'buy'},
+    {japanese:'住む・生きる', english:'live'},
+    {japanese:'手伝う・助ける', english:'help'},
+    {japanese:'来る・行く', english:'come'},
+  ]},
+  { id:'p4_2', title:'P4-②一般動詞②・季節', icon:'🌸', sub:'10単語', words:[
+    {japanese:'〜を書く', english:'write'},
+    {japanese:'〜を教える', english:'teach'},
+    {japanese:'座る', english:'sit'},
+    {japanese:'呼ぶ・電話をかける', english:'call'},
+    {japanese:'〜に参加する', english:'join'},
+    {japanese:'春', english:'spring'},
+    {japanese:'夏', english:'summer'},
+    {japanese:'秋', english:'fall'},
+    {japanese:'秋', english:'autumn'},
+    {japanese:'冬', english:'winter'},
+  ]},
+  { id:'p4_3', title:'P4-③月①', icon:'📅', sub:'10単語', words:[
+    {japanese:'1月', english:'January'},
+    {japanese:'2月', english:'February'},
+    {japanese:'3月', english:'March'},
+    {japanese:'4月', english:'April'},
+    {japanese:'5月', english:'May'},
+    {japanese:'6月', english:'June'},
+    {japanese:'7月', english:'July'},
+    {japanese:'8月', english:'August'},
+    {japanese:'9月', english:'September'},
+    {japanese:'10月', english:'October'},
+  ]},
+  { id:'p4_4', title:'P4-④月②・身体', icon:'👤', sub:'10単語', words:[
+    {japanese:'11月', english:'November'},
+    {japanese:'12月', english:'December'},
+    {japanese:'からだ・胴体', english:'body'},
+    {japanese:'頭・頭部', english:'head'},
+    {japanese:'目', english:'eye'},
+    {japanese:'耳', english:'ear'},
+    {japanese:'鼻', english:'nose'},
+    {japanese:'口', english:'mouth'},
+    {japanese:'手', english:'hand'},
+    {japanese:'足', english:'foot'},
+  ]},
+];
+
+// ===== STATE =====
+let currentSetId = null;
+let wlAdminMode = false;
+let step1Words = [];       // Step1で選ばれた単語セット（Step2でも使い回す）
+let currentWords = [];
+let currentIndex = 0;
+let currentStep = 1; // 1 or 2
+let step1WrongWords = [];  // Step1のミス単語
+let step2WrongWords = [];  // Step2のミス単語
+let wrongInThisWord = false;
+let audioCtx = null;
+
+function getAudioCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+
+// ===== BUZZ SOUND =====
+function playBuzz() {
+  try {
+    const ctx = getAudioCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.type = 'square';
+    osc.frequency.setValueAtTime(120, ctx.currentTime);
+    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.25);
+  } catch(e) {}
+}
+
+// ===== SUCCESS SOUND =====
+function playSuccess() {
+  try {
+    const ctx = getAudioCtx();
+    [523, 659, 784].forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.frequency.value = freq;
+      osc.type = 'sine';
+      const t = ctx.currentTime + i * 0.1;
+      gain.gain.setValueAtTime(0.2, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+      osc.start(t);
+      osc.stop(t + 0.3);
+    });
+  } catch(e) {}
+}
+
+// ===== SPEECH =====
+function speakWord() {
+  if (!currentWords.length) return;
+  speakWordText(currentWords[currentIndex].english);
+}
+
+function speakWordText(text) {
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.lang = 'en-US';
+  utter.rate = 0.85;
+  window.speechSynthesis.cancel();
+  window.speechSynthesis.speak(utter);
+}
+
+// ===== KEY CLICK SOUND (mechanical) =====
+function playKeyClick() {
+  try {
+    const ctx = getAudioCtx();
+    const t = ctx.currentTime;
+
+    // ① ノイズバースト（打鍵の瞬間的な衝撃音）
+    const noiseLen = Math.floor(ctx.sampleRate * 0.012);
+    const noiseBuf = ctx.createBuffer(1, noiseLen, ctx.sampleRate);
+    const nd = noiseBuf.getChannelData(0);
+    for (let i = 0; i < noiseLen; i++) {
+      nd[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / noiseLen, 3);
+    }
+    const noiseSrc = ctx.createBufferSource();
+    noiseSrc.buffer = noiseBuf;
+    const noiseGain = ctx.createGain();
+    noiseGain.gain.setValueAtTime(0.35, t);
+    noiseGain.gain.exponentialRampToValueAtTime(0.001, t + 0.012);
+    noiseSrc.connect(noiseGain);
+    noiseGain.connect(ctx.destination);
+    noiseSrc.start(t);
+
+    // ② 高周波オシレーター（「カチッ」のトーン成分）
+    const osc = ctx.createOscillator();
+    osc.type = 'square';
+    osc.frequency.setValueAtTime(1800, t);
+    osc.frequency.exponentialRampToValueAtTime(600, t + 0.018);
+    const oscGain = ctx.createGain();
+    oscGain.gain.setValueAtTime(0.07, t);
+    oscGain.gain.exponentialRampToValueAtTime(0.001, t + 0.022);
+    osc.connect(oscGain);
+    oscGain.connect(ctx.destination);
+    osc.start(t);
+    osc.stop(t + 0.025);
+  } catch(e) {}
+}
+
+// ===== SHUFFLE =====
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+// ===== CREATE SET SCREEN =====
+const EMOJI_LIST = ['📚','⭐','🌟','🎯','🏆','🎓','🌈','🦊','🐧','🌸','🎮','🚀','🎵','🌍','🍎','🔥','💡','🎨','🏅','🦁','🐬','🦋','🍀','🎪','🧩'];
+let newSetSelectedEmoji = '📚';
+let newSetWords = [];
+
+function openCreateSet() {
+  newSetSelectedEmoji = '📚';
+  newSetWords = [];
+  document.getElementById('newSetTitle').value = '';
+  document.getElementById('newJpInput').value = '';
+  document.getElementById('newEnInput').value = '';
+  renderEmojiGrid();
+  renderNewWordTable();
+  document.getElementById('titleBarText').textContent = '(株)アイサン🏬 で英語タイピング・単語集を作成';
+  showScreen('createSetScreen');
+}
+
+function renderEmojiGrid() {
+  document.getElementById('emojiGrid').innerHTML = EMOJI_LIST.map(e =>
+    '<button class="emoji-btn' + (e === newSetSelectedEmoji ? ' selected' : '') +
+    '" onclick="selectEmoji(\'' + e + '\')">' + e + '</button>'
+  ).join('');
+}
+
+function selectEmoji(emoji) {
+  newSetSelectedEmoji = emoji;
+  renderEmojiGrid();
+}
+
+function addNewWord() {
+  const jp = document.getElementById('newJpInput').value.trim();
+  const en = document.getElementById('newEnInput').value.trim().toLowerCase();
+  if (!jp || !en) return;
+  newSetWords.push({ japanese: jp, english: en });
+  document.getElementById('newJpInput').value = '';
+  document.getElementById('newEnInput').value = '';
+  renderNewWordTable();
+  document.getElementById('newJpInput').focus();
+}
+
+function deleteNewWord(index) {
+  newSetWords.splice(index, 1);
+  renderNewWordTable();
+}
+
+function renderNewWordTable() {
+  const table = document.getElementById('newWordTable');
+  if (newSetWords.length === 0) {
+    table.innerHTML = '<p style="color:#aaa;text-align:center;padding:20px;font-size:14px">単語を追加してください</p>';
+    return;
+  }
+  const spkSvg = '<svg viewBox="0 0 24 24" width="14" height="14" fill="white"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>';
+  table.innerHTML = newSetWords.map((w, i) =>
+    '<div class="word-list-row">' +
+    '<span class="wl-jp">' + w.japanese + '</span>' +
+    '<span class="wl-en">' + w.english + '</span>' +
+    '<button class="speak-sm-btn" onclick="speakWordText(\'' + w.english + '\')">' + spkSvg + '</button>' +
+    '<button class="wl-del-btn" onclick="deleteNewWord(' + i + ')">削除</button>' +
+    '</div>'
+  ).join('');
+}
+
+function saveNewSet() {
+  const title = document.getElementById('newSetTitle').value.trim();
+  if (!title) { alert('タイトルを入力してください'); return; }
+  if (newSetWords.length === 0) { alert('単語を1つ以上追加してください'); return; }
+  wordSets.push({
+    id: 'custom_' + Date.now(),
+    title,
+    icon: newSetSelectedEmoji,
+    sub: newSetWords.length + '単語',
+    words: [...newSetWords]
+  });
+  document.getElementById('titleBarText').textContent = '(株)アイサン🏬 で英語タイピング';
+  buildTopScreen();
+  showScreen('topScreen');
+}
+
+function cancelCreateSet() {
+  document.getElementById('titleBarText').textContent = '(株)アイサン🏬 で英語タイピング';
+  showScreen('topScreen');
+}
+
+// ===== WORD LIST SCREEN =====
+function openWordList() {
+  wlAdminMode = false;
+  applyWlAdminMode();
+  const set = wordSets.find(s => s.id === currentSetId);
+  document.getElementById('wordListTitle').textContent = set.title + '・単語一覧';
+  document.getElementById('titleBarText').textContent = '(株)アイサン🏬 で英語タイピング・単語一覧';
+  renderWordList();
+  showScreen('wordListScreen');
+}
+
+function applyWlAdminMode() {
+  const btn = document.getElementById('wlAdminBtn');
+  const form = document.getElementById('wlAddForm');
+  btn.textContent = wlAdminMode ? '🔓 管理中' : '🔒 管理';
+  btn.classList.toggle('active', wlAdminMode);
+  form.style.display = wlAdminMode ? 'flex' : 'none';
+  // 削除ボタンの表示切り替え
+  document.querySelectorAll('#wordListTable .wl-del-btn').forEach(b => {
+    b.style.display = wlAdminMode ? 'inline-block' : 'none';
+  });
+}
+
+function toggleWlAdmin() {
+  if (!wlAdminMode) {
+    const pw = prompt('パスワードを入力してください');
+    if (pw === null) return;
+    if (pw === '1234') {
+      wlAdminMode = true;
+      applyWlAdminMode();
+    } else {
+      alert('パスワードが違います');
+    }
+  } else {
+    if (confirm('管理者モードを終了しますか？')) {
+      wlAdminMode = false;
+      applyWlAdminMode();
+    }
+  }
+}
+
+function maskWord(word, state) {
+  if (state === 0) return word;
+  const chars = word.split('');
+  const firstIdx = state === 2 ? chars.findIndex(c => c !== ' ') : -1;
+  return chars.map((c, i) => {
+    if (c === ' ') return ' ';
+    return (state === 2 && i === firstIdx) ? c : '_';
+  }).join('');
+}
+
+function cycleWlEn(span) {
+  const set = wordSets.find(s => s.id === currentSetId);
+  const word = set.words[parseInt(span.dataset.idx)].english;
+  const state = (parseInt(span.dataset.state) + 1) % 3;
+  span.dataset.state = state;
+  span.textContent = maskWord(word, state);
+}
+
+function wlHideAll() {
+  const set = wordSets.find(s => s.id === currentSetId);
+  document.querySelectorAll('#wordListTable .wl-en').forEach(span => {
+    const word = set.words[parseInt(span.dataset.idx)].english;
+    span.dataset.state = 1;
+    span.textContent = maskWord(word, 1);
+  });
+}
+
+function wlRevealAll() {
+  const set = wordSets.find(s => s.id === currentSetId);
+  document.querySelectorAll('#wordListTable .wl-en').forEach(span => {
+    const word = set.words[parseInt(span.dataset.idx)].english;
+    span.dataset.state = 0;
+    span.textContent = word;
+  });
+}
+
+function renderWordList() {
+  const set = wordSets.find(s => s.id === currentSetId);
+  const table = document.getElementById('wordListTable');
+  if (set.words.length === 0) {
+    table.innerHTML = '<p style="color:#aaa;text-align:center;padding:24px">単語がありません</p>';
+    return;
+  }
+  const speakerSvg = '<svg viewBox="0 0 24 24" width="16" height="16" fill="white"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>';
+  table.innerHTML = set.words.map((w, i) =>
+    '<div class="word-list-row">' +
+    '<span class="wl-jp">' + w.japanese + '</span>' +
+    '<span class="wl-en" data-state="0" data-idx="' + i + '" onclick="cycleWlEn(this)">' + w.english + '</span>' +
+    '<button class="speak-sm-btn" onclick="speakWordText(\'' + w.english.replace(/'/g, "\\'") + '\')" title="発音">' + speakerSvg + '</button>' +
+    '<button class="wl-del-btn" onclick="deleteWord(' + i + ')" style="display:' + (wlAdminMode ? 'inline-block' : 'none') + '">削除</button>' +
+    '</div>'
+  ).join('');
+}
+
+function addWord() {
+  const jp = document.getElementById('addJpInput').value.trim();
+  const en = document.getElementById('addEnInput').value.trim().toLowerCase();
+  if (!jp || !en) return;
+  const set = wordSets.find(s => s.id === currentSetId);
+  set.words.push({ japanese: jp, english: en });
+  set.sub = set.words.length + '単語';
+  document.getElementById('addJpInput').value = '';
+  document.getElementById('addEnInput').value = '';
+  renderWordList();
+}
+
+function deleteWord(index) {
+  const set = wordSets.find(s => s.id === currentSetId);
+  set.words.splice(index, 1);
+  set.sub = set.words.length + '単語';
+  renderWordList();
+}
+
+function closeWordList() {
+  const set = wordSets.find(s => s.id === currentSetId);
+  document.getElementById('countSetName').textContent = set.title + '（' + set.words.length + '単語）';
+  document.getElementById('titleBarText').textContent = '(株)アイサン🏬 で英語タイピング・問題数を選択';
+  showScreen('countScreen');
+}
+
+// ===== TOP SCREEN =====
+const EIKEN5_GROUP = { label: '英検5級', emoji: '⭐', ids: ['eiken5_verb','eiken5_family','eiken5_season','eiken5_time','eiken5_week','eiken5_month','eiken5_adj','eiken5_question'] };
+const GROUPS = [
+  { label: 'Part-1　英語のキホン',         emoji: '📚', ids: ['p1_1','p1_2','p1_3','p1_4','p1_5','p1_6','p1_7','p1_8','p1_9'] },
+  { label: 'Part-2　日常生活',             emoji: '🏠', ids: ['p2_1','p2_2','p2_3','p2_4','p2_5','p2_6','p2_7','p2_8','p2_9','p2_10','p2_11','p2_12','p2_13'] },
+  { label: 'Part-3　身のまわりの人・もの', emoji: '👥', ids: ['p3_1','p3_2','p3_3','p3_4','p3_5','p3_6','p3_7','p3_8','p3_9','p3_10'] },
+  { label: 'Part-4　その他の重要単語',     emoji: '⭐', ids: ['p4_1','p4_2','p4_3','p4_4'] },
+];
+const groupOpenState = {};
+
+// 各Partの全単語をまとめた単語帳を生成してwordSetsに追加
+const PART_ALL_DEFS = [
+  { id: 'part1_all', title: 'Part-1 全単語', icon: '📚', groupIndex: 0 },
+  { id: 'part2_all', title: 'Part-2 全単語', icon: '🏠', groupIndex: 1 },
+  { id: 'part3_all', title: 'Part-3 全単語', icon: '👨‍👩‍👧', groupIndex: 2 },
+  { id: 'part4_all', title: 'Part-4 全単語', icon: '⭐', groupIndex: 3 },
+];
+PART_ALL_DEFS.forEach(def => {
+  if (wordSets.find(s => s.id === def.id)) return; // 重複防止
+  const group = GROUPS[def.groupIndex];
+  const combined = group.ids.flatMap(id => {
+    const s = wordSets.find(ws => ws.id === id);
+    return s ? s.words : [];
+  });
+  wordSets.push({ id: def.id, title: def.title, icon: def.icon, sub: combined.length + '単語', words: combined });
+});
+
+function makeCard(set) {
+  const card = document.createElement('div');
+  card.className = 'word-card';
+  card.innerHTML =
+    '<div class="card-icon">' + set.icon + '</div>' +
+    '<div class="card-title">' + set.title + '</div>' +
+    '<div class="card-sub">' + set.sub + '</div>';
+  card.onclick = () => selectWordSet(set.id);
+  return card;
+}
+
+function makeSubCard(set) {
+  const card = document.createElement('div');
+  card.className = 'sub-word-card';
+  card.innerHTML =
+    '<div class="card-icon">' + set.icon + '</div>' +
+    '<div class="card-title">' + set.title + '</div>' +
+    '<div class="card-sub">' + set.sub + '</div>';
+  card.onclick = () => selectWordSet(set.id);
+  return card;
+}
+
+function buildTopScreen() {
+  const grid = document.getElementById('cardGrid');
+  grid.innerHTML = '';
+
+  const groupedIds = GROUPS.flatMap(g => g.ids);
+  const partAllIds = PART_ALL_DEFS.map(d => d.id);
+  const eiken5GroupIds = EIKEN5_GROUP.ids;
+
+  // トップ行: 英検5級 → Part-x全単語 → ユーザー追加分 の順に表示
+  const topRow = document.createElement('div');
+  topRow.className = 'top-cards-row';
+
+  // 1. 英検5級
+  const eiken = wordSets.find(s => s.id === 'eiken5');
+  if (eiken) topRow.appendChild(makeCard(eiken));
+
+  // 2. Part-1〜4 全単語（固定順）
+  PART_ALL_DEFS.forEach(def => {
+    const s = wordSets.find(ws => ws.id === def.id);
+    if (s) topRow.appendChild(makeCard(s));
+  });
+
+  // 3. ユーザー追加分（グループにも全単語にも英検5級サブセットにも含まれないもの）
+  wordSets.forEach(set => {
+    if (set.id !== 'eiken5' && !groupedIds.includes(set.id) && !partAllIds.includes(set.id) && !eiken5GroupIds.includes(set.id)) {
+      topRow.appendChild(makeCard(set));
+    }
+  });
+
+  grid.appendChild(topRow);
+
+  // 英検5級アコーディオン（Part-1〜4の前）
+  (function() {
+    const sets = EIKEN5_GROUP.ids.map(id => wordSets.find(s => s.id === id)).filter(Boolean);
+    if (!sets.length) return;
+    const section = document.createElement('div');
+    section.className = 'group-section';
+    const isOpen = !!groupOpenState['eiken5'];
+    const btn = document.createElement('button');
+    btn.className = 'group-btn' + (isOpen ? ' open' : '');
+    btn.innerHTML =
+      '<span class="group-btn-left">' +
+        '<span class="group-btn-emoji">' + EIKEN5_GROUP.emoji + '</span>' +
+        '<span class="group-btn-text">' +
+          '<span class="group-btn-title">' + EIKEN5_GROUP.label + '</span>' +
+          '<span class="group-btn-sub">' + sets.length + 'セット</span>' +
+        '</span>' +
+      '</span>' +
+      '<span class="group-arrow">▶</span>';
+    const cardsDiv = document.createElement('div');
+    cardsDiv.className = 'group-cards' + (isOpen ? ' open' : '');
+    sets.forEach(s => cardsDiv.appendChild(makeSubCard(s)));
+    btn.onclick = () => {
+      groupOpenState['eiken5'] = !groupOpenState['eiken5'];
+      btn.classList.toggle('open');
+      cardsDiv.classList.toggle('open');
+    };
+    section.appendChild(btn);
+    section.appendChild(cardsDiv);
+    grid.appendChild(section);
+  })();
+
+  // アコーディオングループ（大きめカード形式）
+  GROUPS.forEach((group, gi) => {
+    const sets = group.ids.map(id => wordSets.find(s => s.id === id)).filter(Boolean);
+    if (!sets.length) return;
+
+    const section = document.createElement('div');
+    section.className = 'group-section';
+
+    const isOpen = !!groupOpenState[gi];
+    const btn = document.createElement('button');
+    btn.className = 'group-btn' + (isOpen ? ' open' : '');
+    btn.innerHTML =
+      '<span class="group-btn-left">' +
+        '<span class="group-btn-emoji">' + group.emoji + '</span>' +
+        '<span class="group-btn-text">' +
+          '<span class="group-btn-title">' + group.label + '</span>' +
+          '<span class="group-btn-sub">' + sets.length + 'セット</span>' +
+        '</span>' +
+      '</span>' +
+      '<span class="group-arrow">▶</span>';
+
+    const cardsDiv = document.createElement('div');
+    cardsDiv.className = 'group-cards' + (isOpen ? ' open' : '');
+    sets.forEach(s => cardsDiv.appendChild(makeSubCard(s)));
+
+    btn.onclick = () => {
+      groupOpenState[gi] = !groupOpenState[gi];
+      btn.classList.toggle('open');
+      cardsDiv.classList.toggle('open');
+    };
+
+    section.appendChild(btn);
+    section.appendChild(cardsDiv);
+    grid.appendChild(section);
+  });
+}
+
+function selectWordSet(id) {
+  currentSetId = id;
+  const set = wordSets.find(s => s.id === id);
+  document.getElementById('countSetName').textContent = set.title + '（' + set.words.length + '単語）';
+
+  const total = set.words.length;
+  const isSmall = total <= 10;
+  const options = isSmall ? [3, 5, total] : [10, 20, 30, total];
+  const labels  = isSmall ? ['3問', '5問', '全問'] : ['10問', '20問', '30問', '全問'];
+  const grid = document.getElementById('countGrid');
+  grid.innerHTML = '';
+  options.forEach((n, i) => {
+    const actual = Math.min(n, total);
+    // 大きいセットで全問が直前の選択肢と同値になる場合は省略
+    if (!isSmall && i === options.length - 1 && actual === options[i - 1]) return;
+    const card = document.createElement('div');
+    card.className = 'count-card';
+    card.innerHTML = `
+      <div class="count-num">${labels[i]}</div>
+      <div class="count-label">${actual}問出題</div>
+    `;
+    card.onclick = () => selectCount(actual);
+    grid.appendChild(card);
+  });
+
+  showScreen('countScreen');
+  document.getElementById('titleBarText').textContent = '(株)アイサン🏬 で英語タイピング・問題数を選択';
+}
+
+function selectCount(n) {
+  const set = wordSets.find(s => s.id === currentSetId);
+  step1Words = shuffle([...set.words]).slice(0, n);
+  currentWords = [...step1Words];
+  currentIndex = 0;
+  currentStep = 1;
+  step1WrongWords = [];
+  step2WrongWords = [];
+  startStudy();
+}
+
+// ===== STUDY SCREEN =====
+let currentWord = '';
+let typedChars = 0;
+
+function startStudy() {
+  showScreen('studyScreen');
+  currentIndex = 0;
+  typedChars = 0;
+  loadWord();
+}
+
+function loadWord() {
+  if (currentIndex >= currentWords.length) {
+    stepComplete();
+    return;
+  }
+  const wordObj = currentWords[currentIndex];
+  currentWord = wordObj.english.toLowerCase();
+  typedChars = 0;
+  wrongInThisWord = false;
+
+  updateTitleBar();
+  updateProgress();
+  updateStepLabel();
+
+  document.getElementById('japaneseText').textContent = wordObj.japanese;
+  document.getElementById('feedbackMsg').textContent = '';
+  document.getElementById('feedbackMsg').className = 'feedback-msg';
+  document.getElementById('hintReveal').textContent = '';
+
+  // Step 1: show English, Step 2: hide English
+  if (currentStep === 1) {
+    document.getElementById('englishHint').textContent = currentWord;
+  } else {
+    document.getElementById('englishHint').textContent = '';
+  }
+
+  renderTypingDisplay();
+
+  const btn = document.getElementById('actionBtn');
+  btn.classList.remove('visible');
+
+  // Auto speak
+  setTimeout(speakWord, 200);
+}
+
+function renderTypingDisplay() {
+  const display = document.getElementById('typingDisplay');
+  display.innerHTML = '';
+  const hintRevealed = currentStep !== 2 || wrongInThisWord;
+  for (let i = 0; i < currentWord.length; i++) {
+    const ch = currentWord[i] === ' ' ? '\u00a0' : currentWord[i];
+    const span = document.createElement('span');
+    if (i < typedChars) {
+      span.textContent = ch;
+      span.className = 'char-done';
+    } else if (i === typedChars) {
+      span.textContent = ch;
+      span.className = hintRevealed ? 'char-cursor' : 'char-cursor-hidden';
+    } else {
+      if (!hintRevealed) continue; // Step2 before first mistake: hide future chars
+      span.textContent = ch;
+      span.className = 'char-pending';
+    }
+    display.appendChild(span);
+  }
+}
+
+function updateTitleBar() {
+  const set = wordSets.find(s => s.id === currentSetId);
+  const stepName = currentStep === 1 ? 'Step 1' : 'Step 2';
+  document.getElementById('titleBarText').textContent =
+    `(株)アイサン🏬 で英語タイピング・${set.title}・${stepName}・No.${currentIndex + 1}`;
+}
+
+function updateProgress() {
+  const pct = currentWords.length ? (currentIndex / currentWords.length * 100) : 0;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressLabel').textContent = `${currentIndex} / ${currentWords.length}`;
+}
+
+function updateStepLabel() {
+  document.getElementById('stepLabel').textContent =
+    currentStep === 1 ? 'Step 1：練習モード' : 'Step 2：チャレンジモード';
+}
+
+// ===== KEYBOARD HANDLER =====
+document.addEventListener('keydown', handleKey);
+
+function handleKey(e) {
+  // Only active in study screen
+  if (!document.getElementById('studyScreen').classList.contains('active')) return;
+  if (document.getElementById('step1CompleteOverlay').classList.contains('active')) return;
+
+  const btn = document.getElementById('actionBtn');
+  if (btn.classList.contains('visible')) {
+    if (e.key === 'Enter') handleAction();
+    return;
+  }
+
+  if (typedChars >= currentWord.length) return;
+
+  const key = e.key.toLowerCase();
+  if (key.length !== 1) return;
+
+  const expected = currentWord[typedChars];
+
+  if (key === expected) {
+    // Correct!
+    playKeyClick();
+    typedChars++;
+    document.getElementById('feedbackMsg').textContent = '';
+    document.getElementById('feedbackMsg').className = 'feedback-msg';
+    renderTypingDisplay();
+
+    if (typedChars === currentWord.length) {
+      // Word complete
+      wordComplete();
+    }
+  } else {
+    // Wrong
+    playBuzz();
+    shakeDisplay();
+    document.getElementById('feedbackMsg').textContent = '× もう一度！';
+    document.getElementById('feedbackMsg').className = 'feedback-msg incorrect';
+
+    // Step 2: reveal grey chars on first mistake
+    if (currentStep === 2 && !wrongInThisWord) {
+      wrongInThisWord = true;
+      renderTypingDisplay();
+    } else {
+      wrongInThisWord = true;
+    }
+  }
+}
+
+function wordComplete() {
+  playSuccess();
+  document.getElementById('feedbackMsg').textContent = '○ 正解！';
+  document.getElementById('feedbackMsg').className = 'feedback-msg correct';
+
+  // ステップ別にミス単語を記録
+  if (wrongInThisWord) {
+    const w = currentWords[currentIndex];
+    const target = currentStep === 1 ? step1WrongWords : step2WrongWords;
+    if (!target.find(x => x.english === w.english)) {
+      target.push(w);
+    }
+  }
+
+  // Flash screen green
+  flashScreen('correct');
+
+  setTimeout(() => {
+    currentIndex++;
+    if (currentIndex >= currentWords.length) {
+      stepComplete();
+    } else {
+      loadWord();
+    }
+  }, 600);
+}
+
+function flashScreen(type) {
+  const content = document.getElementById('studyContent');
+  content.classList.remove('flash-correct', 'flash-red');
+  void content.offsetWidth;
+  content.classList.add(type === 'correct' ? 'flash-correct' : 'flash-red');
+}
+
+function shakeDisplay() {
+  const display = document.getElementById('typingDisplay');
+  display.classList.remove('shake');
+  void display.offsetWidth;
+  display.classList.add('shake');
+  flashScreen('wrong');
+}
+
+// ===== STEP COMPLETE =====
+function stepComplete() {
+  if (currentStep === 1) {
+    document.getElementById('step1ReviewBtn').style.display = step1WrongWords.length > 0 ? '' : 'none';
+    const list = document.getElementById('step1ReviewList');
+    if (step1WrongWords.length > 0) {
+      const spkSvg = '<svg viewBox="0 0 24 24" width="14" height="14" fill="white"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>';
+      list.innerHTML = '<div style="width:100%;max-width:480px;text-align:left">' +
+        '<p style="font-size:14px;color:#f44336;font-weight:700;margin-bottom:8px">間違えた単語（' + step1WrongWords.length + '語）</p>' +
+        step1WrongWords.map(w =>
+          '<div style="display:flex;align-items:center;gap:10px;background:#fff5f5;border:1px solid #ffcdd2;border-radius:10px;padding:10px 16px;margin-bottom:6px;font-size:15px">' +
+          '<span style="flex:1;color:#888">' + w.japanese + '</span>' +
+          '<span style="flex:1;font-weight:700;color:#f44336">' + w.english + '</span>' +
+          '<button class="speak-sm-btn" onclick="speakWordText(\'' + w.english + '\')" title="発音">' + spkSvg + '</button>' +
+          '</div>'
+        ).join('') + '</div>';
+    } else {
+      list.innerHTML = '<p style="color:#4caf50;font-size:16px;font-weight:700">🎉 全問ノーミス！</p>';
+    }
+    document.getElementById('step1CompleteOverlay').classList.add('active');
+  } else {
+    showResult();
+  }
+}
+
+function closeOverlay() {
+  document.getElementById('step1CompleteOverlay').classList.remove('active');
+  currentWords = shuffle([...step1Words]);
+  currentIndex = 0;
+  step1WrongWords = [];
+  loadWord();
+}
+
+function reviewWrongFromStep1() {
+  if (!step1WrongWords.length) return;
+  document.getElementById('step1CompleteOverlay').classList.remove('active');
+  currentWords = shuffle([...step1WrongWords]);
+  currentStep = 1;
+  currentIndex = 0;
+  step1WrongWords = [];
+  showScreen('studyScreen');
+  loadWord();
+}
+
+function startStep2() {
+  document.getElementById('step1CompleteOverlay').classList.remove('active');
+  currentWords = shuffle([...step1Words]);
+  currentStep = 2;
+  currentIndex = 0;
+  step2WrongWords = [];
+  loadWord();
+}
+
+function handleAction() {
+  // placeholder for future action button usage
+}
+
+// ===== RESULT SCREEN =====
+function showResult() {
+  showScreen('resultScreen');
+  document.getElementById('titleBarText').textContent = '(株)アイサン🏬 で英語タイピング・結果';
+
+  const set = wordSets.find(s => s.id === currentSetId);
+  document.getElementById('resultTitle').textContent = `${set.title} チャレンジ完了！`;
+
+  const total = step1Words.length;
+  const wrong = step2WrongWords.length;
+  const correct = total - wrong;
+
+  document.getElementById('resultStats').innerHTML = `
+    <div class="stat-box">
+      <div class="stat-num">${total}</div>
+      <div class="stat-label">合計問題数</div>
+    </div>
+    <div class="stat-box correct-stat">
+      <div class="stat-num">${correct}</div>
+      <div class="stat-label">正解</div>
+    </div>
+    <div class="stat-box wrong-stat">
+      <div class="stat-num">${wrong}</div>
+      <div class="stat-label">ミスあり</div>
+    </div>
+  `;
+
+  const reviewEl = document.getElementById('reviewSection');
+  if (step2WrongWords.length > 0) {
+    reviewEl.innerHTML = `<h3>復習しよう！ (${step2WrongWords.length}語)</h3>` +
+      step2WrongWords.map(w => `
+        <div class="review-word">
+          <span class="rw-jp">${w.japanese}</span>
+          <span class="rw-en">${w.english}</span>
+          <button class="speak-sm-btn" onclick="speakWordText('${w.english}')" title="発音">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="white"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
+          </button>
+        </div>
+      `).join('');
+  } else {
+    reviewEl.innerHTML = `<p style="color:#4caf50;font-size:18px;font-weight:700;text-align:center">🎉 全問ノーミス！素晴らしい！</p>`;
+  }
+
+  document.getElementById('resultBtns').innerHTML = `
+    <button class="action-btn visible" style="margin-top:0" onclick="retryStep2()">もう一度チャレンジ</button>
+    ${step2WrongWords.length > 0 ? `<button class="outline-btn" onclick="retryWrongOnly()">間違えた単語を復習する</button>` : ''}
+    <button class="outline-btn" onclick="goTop()">単語集を選ぶ</button>
+  `;
+}
+
+function retryStep2() {
+  currentWords = shuffle([...step1Words]);
+  currentStep = 2;
+  currentIndex = 0;
+  step2WrongWords = [];
+  showScreen('studyScreen');
+  loadWord();
+}
+
+function retryWrongOnly() {
+  if (!step2WrongWords.length) return;
+  currentWords = shuffle([...step2WrongWords]);
+  currentStep = 1;
+  currentIndex = 0;
+  step2WrongWords = [];
+  showScreen('studyScreen');
+  loadWord();
+}
+
+function goTop() {
+  document.getElementById('step1CompleteOverlay').classList.remove('active');
+  document.getElementById('titleBarText').textContent = '(株)アイサン🏬 で英語タイピング';
+  showScreen('topScreen');
+}
+
+// ===== UTILITY =====
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  const showBack = ['countScreen', 'wordListScreen', 'studyScreen', 'resultScreen'].includes(id);
+  document.getElementById('backBtn').style.display = showBack ? 'inline' : 'none';
+}
+
+function handleBackBtn() {
+  const active = document.querySelector('.screen.active');
+  if (!active) return;
+  switch (active.id) {
+    case 'countScreen':
+      goTop();
+      break;
+    case 'wordListScreen':
+      closeWordList();
+      break;
+    case 'studyScreen':
+      if (confirm('問題数の選択に戻りますか？')) {
+        const set = wordSets.find(s => s.id === currentSetId);
+        document.getElementById('titleBarText').textContent = '(株)アイサン🏬 で英語タイピング・問題数を選択';
+        document.getElementById('countSetName').textContent = set.title + '（' + set.words.length + '単語）';
+        showScreen('countScreen');
+      }
+      break;
+    case 'resultScreen':
+      goTop();
+      break;
+  }
+}
+
+function confirmBackToCount() {
+  if (confirm('問題数の選択に戻りますか？')) {
+    const set = wordSets.find(s => s.id === currentSetId);
+    document.getElementById('titleBarText').textContent = '(株)アイサン🏬 で英語タイピング・問題数を選択';
+    document.getElementById('countSetName').textContent = set.title + '（' + set.words.length + '単語）';
+    showScreen('countScreen');
+  }
+}
+
+// ===== INIT =====
+buildTopScreen();
+</script>
+</body>
+</html>
